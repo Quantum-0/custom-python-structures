@@ -176,20 +176,26 @@ class Insert(unittest.TestCase):
             l.insert(i, 4)
             assert l == r, (i, l, r)
 
-    def test_difference_from_list(self):
-        l = [1, 2, 3]
-        r = LoopList(l)
-        r.insert(3, 4)
-        l.insert(3, 4)
-        assert l != r
-
     def test_bound(self):
         l = [1, 2, 3]
         r1 = LoopList(l)
         r2 = LoopList(l)
         r1.insert(3, 4)
         r2.insert(0, 4)
+        assert r1 != r2
+
+    def test_bounds_out_of_range(self):
+        l = [1, 2, 3]
+        r1 = LoopList(l)
+        r2 = LoopList(l)
+        r3 = LoopList(l)
+        r4 = LoopList(l)
+        r1.insert(-3, 4)
+        r2.insert(0, 4)
+        r3.insert(3, 4)
+        r4.insert(6, 4)
         assert r1 == r2
+        assert r3 == r4
 
     def test_out_of_base_range(self):
         l = [1, 2, 3]

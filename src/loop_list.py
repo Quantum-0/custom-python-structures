@@ -7,7 +7,10 @@ class LoopList(Sequence):
         self._internal_list = list(values) if values else list()
 
     def insert(self, index: int, value: Any) -> None:
-        self._internal_list.insert(index % len(self), value)
+        if index > 0:
+            self._internal_list.insert((index-1) % len(self) + 1, value)
+        else:
+            self._internal_list.insert(index % len(self), value)
 
     def __getitem__(self, i: Union[int, slice]):
         if isinstance(i, int):
