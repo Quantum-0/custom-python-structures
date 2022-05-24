@@ -3,8 +3,8 @@ import unittest
 from src.loop_list import LoopList
 
 
-def delete_element(ll: LoopList, index: int = 0):
-    del ll[index]
+def lrange(*args, **kwargs):
+    return list(range(*args, **kwargs))
 
 
 class Empty(unittest.TestCase):
@@ -15,7 +15,9 @@ class Empty(unittest.TestCase):
         assert len(self.ring) == 0
 
     def test_error_deleting(self):
-        deletion = lambda: delete_element(self.ring)
+        def deletion():
+            del self.ring[0]
+
         self.assertRaises(ValueError, deletion)
 
     def test_eq_empty_list(self):
@@ -71,7 +73,7 @@ class Indexing(unittest.TestCase):
     def tearDown(self) -> None:
         for i in range(10):
             assert self.ring[i] == i
-        assert self.ring == list(range(10))
+        assert self.ring == lrange(10)
 
 
 class Slicing(unittest.TestCase):
@@ -79,7 +81,7 @@ class Slicing(unittest.TestCase):
         self.ring = LoopList(range(10))
 
     def test_get_in_range(self):
-        assert self.ring[:] == list(range(10))
+        assert self.ring[:] == lrange(10)
         assert self.ring[:3] == [0, 1, 2]
         assert self.ring[7:] == [7, 8, 9]
         assert self.ring[4:7] == [4, 5, 6]
@@ -93,8 +95,8 @@ class Slicing(unittest.TestCase):
         assert self.ring[-15:-12] == [5, 6, 7]
 
     def test_overflow_several_times(self):
-        assert self.ring[-1:11] == [9] + list(range(10)) + [0]
-        assert self.ring[-15:25] == [5, 6, 7, 8, 9] + (list(range(10)) * 3) + [0, 1, 2, 3, 4]
+        assert self.ring[-1:11] == [9] + lrange(10) + [0]
+        assert self.ring[-15:25] == lrange(5, 10) + (lrange(10) * 3) + lrange(5)
 
     def test_slicing_error(self):
         self.assertRaises(IndexError, lambda: self.ring[5:4])
@@ -118,14 +120,14 @@ class RotationReverseAndAppend(unittest.TestCase):
         self.ring.reverse()
 
     def test_rotate(self):
-        assert self.ring.rotate(len(self.ring)) == list(range(10))
+        assert self.ring.rotate(len(self.ring)) == lrange(10)
         assert self.ring.rotate(5) == [5, 6, 7, 8, 9, 0, 1, 2, 3, 4]
-        assert self.ring.rotate(5) == list(range(10))
+        assert self.ring.rotate(5) == lrange(10)
         assert self.ring.rotate(2) == [2, 3, 4, 5, 6, 7, 8, 9, 0, 1]
-        assert self.ring.rotate(8) == list(range(10))
+        assert self.ring.rotate(8) == lrange(10)
         assert self.ring.rotate(-1) == [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
         assert self.ring.rotate(48) == [7, 8, 9, 0, 1, 2, 3, 4, 5, 6]
-        assert self.ring.rotate(3) == list(range(10))
+        assert self.ring.rotate(3) == lrange(10)
 
     def test_append(self):
         ring = LoopList([1] * 5)
@@ -143,10 +145,10 @@ class Deletion(unittest.TestCase):
     def test_delete(self):
         del self.ring[9]
         assert len(self.ring) == 9
-        assert self.ring == list(range(9))
+        assert self.ring == lrange(9)
         del self.ring[0]
         assert len(self.ring) == 8
-        assert self.ring == list(range(1, 9))
+        assert self.ring == lrange(1, 9)
         del self.ring[4]
         assert self.ring == [1, 2, 3, 4, 6, 7, 8]
 

@@ -4,11 +4,11 @@ from typing import Union, Any, Optional, List
 
 class LoopList(Sequence):
     def __init__(self, values: Optional[Union[List, Sequence, range]] = None):
-        self._internal_list = list(values) if values else list()
+        self._internal_list = list(values) if values else []
 
     def insert(self, index: int, value: Any) -> None:
         if index > 0:
-            self._internal_list.insert((index-1) % len(self) + 1, value)
+            self._internal_list.insert((index - 1) % len(self) + 1, value)
         else:
             self._internal_list.insert(index % len(self), value)
 
@@ -17,30 +17,29 @@ class LoopList(Sequence):
             return self._internal_list[i % len(self)]
         if not isinstance(i, slice):
             raise IndexError()
+
         if not isinstance(i.start, int) and i.start is not None:
             raise IndexError()
         if not isinstance(i.stop, int) and i.stop is not None:
             raise IndexError()
-        a = i.start or 0
-        b = i.stop or len(self)
-        if a > b:
+        begin = i.start or 0
+        end = i.stop or len(self)
+        if begin > end:
             raise IndexError()
-        a_mod = a % len(self)
-        b_mod = b % len(self)
-        a_full_cycles = a // len(self)
-        b_full_cycles = b // len(self)
-        full_cycles = b_full_cycles - a_full_cycles
+        begin_mod = begin % len(self)
+        end_mod = end % len(self)
+        full_cycles = (end // len(self)) - (begin // len(self))
         if full_cycles:
             return (
-                self._internal_list[a_mod:]
+                self._internal_list[begin_mod:]
                 + self._internal_list * (full_cycles - 1)
-                + self._internal_list[:b_mod]
+                + self._internal_list[:end_mod]
             )
-        return self._internal_list[a_mod:b_mod]
+        return self._internal_list[begin_mod:end_mod]
 
-    def __setitem__(self, i: int, o: Any) -> None:
+    def __setitem__(self, i: int, value: Any) -> None:
         if isinstance(i, int):
-            self._internal_list[i % len(self)] = o
+            self._internal_list[i % len(self)] = value
         else:
             raise IndexError()
 
@@ -60,10 +59,9 @@ class LoopList(Sequence):
     def __eq__(self, other) -> bool:
         if isinstance(other, list):
             return self._internal_list == other
-        elif isinstance(other, LoopList):
+        if isinstance(other, LoopList):
             return self._internal_list == other._internal_list
-        else:
-            raise TypeError("Cannot compare")
+        raise TypeError("Cannot compare")
 
     def rotate(self, indexes: int):
         i = indexes % len(self)
