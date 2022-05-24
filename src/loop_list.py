@@ -12,31 +12,31 @@ class LoopList(Sequence):
         else:
             self._internal_list.insert(index % len(self), value)
 
-    def __getitem__(self, i: Union[int, slice]):
+    def __getitem__(self, i: Union[int, slice]) -> Any:
         if isinstance(i, int):
             return self._internal_list[i % len(self)]
-        elif isinstance(i, slice):
-            if not isinstance(i.start, int) and i.start is not None:
-                raise IndexError()
-            if not isinstance(i.stop, int) and i.stop is not None:
-                raise IndexError()
-            a = i.start or 0
-            b = i.stop or len(self)
-            if a > b:
-                raise IndexError()
-            a_mod = a % len(self)
-            b_mod = b % len(self)
-            a_full_cycles = a // len(self)
-            b_full_cycles = b // len(self)
-            full_cycles = b_full_cycles - a_full_cycles
-            if full_cycles:
-                return (
-                    self._internal_list[a_mod:]
-                    + self._internal_list * (full_cycles - 1)
-                    + self._internal_list[:b_mod]
-                )
-            else:
-                return self._internal_list[a_mod:b_mod]
+        if not isinstance(i, slice):
+            raise IndexError()
+        if not isinstance(i.start, int) and i.start is not None:
+            raise IndexError()
+        if not isinstance(i.stop, int) and i.stop is not None:
+            raise IndexError()
+        a = i.start or 0
+        b = i.stop or len(self)
+        if a > b:
+            raise IndexError()
+        a_mod = a % len(self)
+        b_mod = b % len(self)
+        a_full_cycles = a // len(self)
+        b_full_cycles = b // len(self)
+        full_cycles = b_full_cycles - a_full_cycles
+        if full_cycles:
+            return (
+                self._internal_list[a_mod:]
+                + self._internal_list * (full_cycles - 1)
+                + self._internal_list[:b_mod]
+            )
+        return self._internal_list[a_mod:b_mod]
 
     def __setitem__(self, i: int, o: Any) -> None:
         if isinstance(i, int):
