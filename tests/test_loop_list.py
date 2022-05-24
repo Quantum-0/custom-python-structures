@@ -168,8 +168,38 @@ class JosephusProblem(unittest.TestCase):
 
 
 class Insert(unittest.TestCase):
-    def test_todo(self):
-        raise NotImplementedError()
+    def test_insert_in_range(self):
+        for i in range(3):
+            l = [1, 2, 3]
+            r = LoopList(l)
+            r.insert(i, 4)
+            l.insert(i, 4)
+            assert l == r, (i, l, r)
+
+    def test_difference_from_list(self):
+        l = [1, 2, 3]
+        r = LoopList(l)
+        r.insert(3, 4)
+        l.insert(3, 4)
+        assert l != r
+
+    def test_bound(self):
+        l = [1, 2, 3]
+        r1 = LoopList(l)
+        r2 = LoopList(l)
+        r1.insert(3, 4)
+        r2.insert(0, 4)
+        assert r1 == r2
+
+    def test_out_of_base_range(self):
+        l = [1, 2, 3]
+        r = LoopList(l)
+        r.insert(10, 4)
+        assert r == [1, 4, 2, 3]
+        r.insert(-2, 5)
+        assert r == [1, 4, 5, 2, 3]
+        r.insert(-5, 0)
+        assert r == [0, 1, 4, 5, 2, 3]
 
 
 class StringRepresentation(unittest.TestCase):

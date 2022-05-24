@@ -1,14 +1,13 @@
-from collections import MutableSequence
+from collections import Sequence
 from typing import Union, Any, Optional, List
 
 
-class LoopList(MutableSequence):
-    def __init__(self, values: Optional[Union[List, MutableSequence, range]] = None):
+class LoopList(Sequence):
+    def __init__(self, values: Optional[Union[List, Sequence, range]] = None):
         self._internal_list = list(values) if values else list()
 
     def insert(self, index: int, value: Any) -> None:
-        # TODO
-        pass
+        self._internal_list.insert(index % len(self), value)
 
     def __getitem__(self, i: Union[int, slice]):
         if isinstance(i, int):
