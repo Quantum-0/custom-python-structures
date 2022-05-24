@@ -1,6 +1,6 @@
 import unittest
 
-from loop_list import LoopList
+from src.loop_list import LoopList
 
 
 def delete_element(ll: LoopList, index: int = 0):
