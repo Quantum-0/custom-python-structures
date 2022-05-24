@@ -28,10 +28,13 @@ class LoopList(MutableSequence):
             b_full_cycles = b // len(self)
             full_cycles = b_full_cycles - a_full_cycles
             if full_cycles:
-                return self._internal_list[a_mod:] + self._internal_list * (full_cycles-1) + self._internal_list[:b_mod]
+                return (
+                    self._internal_list[a_mod:]
+                    + self._internal_list * (full_cycles - 1)
+                    + self._internal_list[:b_mod]
+                )
             else:
                 return self._internal_list[a_mod:b_mod]
-
 
     def __setitem__(self, i: int, o: Any) -> None:
         if isinstance(i, int):
@@ -41,9 +44,9 @@ class LoopList(MutableSequence):
 
     def __delitem__(self, i: int) -> None:
         if len(self) == 0:
-            raise ValueError(self.__class__.__name__ + ' is Empty')
+            raise ValueError(self.__class__.__name__ + " is Empty")
         if not isinstance(i, int):
-            raise IndexError('Index must be int')
+            raise IndexError("Index must be int")
         del self._internal_list[i % len(self)]
 
     def __len__(self) -> int:
@@ -58,7 +61,7 @@ class LoopList(MutableSequence):
         elif isinstance(other, LoopList):
             return self._internal_list == other._internal_list
         else:
-            raise TypeError('Cannot compare')
+            raise TypeError("Cannot compare")
 
     def rotate(self, indexes: int):
         i = indexes % len(self)
@@ -75,4 +78,4 @@ class LoopList(MutableSequence):
         self._internal_list = self._internal_list[::-1]
 
     def __repr__(self):
-        return f'<LoopList{self._internal_list}>'
+        return f"<LoopList{self._internal_list}>"
