@@ -129,7 +129,8 @@ class RotationReverseAndAppend(unittest.TestCase):
         assert self.ring.rotate(48) == [7, 8, 9, 0, 1, 2, 3, 4, 5, 6]
         assert self.ring.rotate(3) == lrange(10)
 
-    def test_append(self):
+    @staticmethod
+    def test_append():
         ring = LoopList([1] * 5)
         for i in range(5):
             ring.append(0)
@@ -156,7 +157,8 @@ class Deletion(unittest.TestCase):
 class JosephusProblem(unittest.TestCase):
     cases = [[2, 1, 2], [5, 2, 3], [7, 5, 6]]
 
-    def solve_josephus_problem(self, n, k):
+    @staticmethod
+    def solve_josephus_problem(n, k):
         r = LoopList(range(1, n + 1))
         while len(r) > 1:
             r.rotate(k - 1)
@@ -170,7 +172,8 @@ class JosephusProblem(unittest.TestCase):
 
 
 class Insert(unittest.TestCase):
-    def test_insert_in_range(self):
+    @staticmethod
+    def test_insert_in_range():
         for i in range(3):
             l = [1, 2, 3]
             r = LoopList(l)
@@ -178,7 +181,8 @@ class Insert(unittest.TestCase):
             l.insert(i, 4)
             assert l == r, (i, l, r)
 
-    def test_bound(self):
+    @staticmethod
+    def test_bound():
         l = [1, 2, 3]
         r1 = LoopList(l)
         r2 = LoopList(l)
@@ -186,7 +190,8 @@ class Insert(unittest.TestCase):
         r2.insert(0, 4)
         assert r1 != r2
 
-    def test_bounds_out_of_range(self):
+    @staticmethod
+    def test_bounds_out_of_range():
         l = [1, 2, 3]
         r1 = LoopList(l)
         r2 = LoopList(l)
@@ -199,7 +204,8 @@ class Insert(unittest.TestCase):
         assert r1 == r2
         assert r3 == r4
 
-    def test_out_of_base_range(self):
+    @staticmethod
+    def test_out_of_base_range():
         l = [1, 2, 3]
         r = LoopList(l)
         r.insert(10, 4)
@@ -211,7 +217,8 @@ class Insert(unittest.TestCase):
 
 
 class StringRepresentation(unittest.TestCase):
-    def test_repr(self):
+    @staticmethod
+    def test_repr():
         r = LoopList(range(3))
         assert str(r) == "<LoopList[0, 1, 2]>"
 
