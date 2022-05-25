@@ -23,6 +23,15 @@ class Empty(unittest.TestCase):
     def test_eq_empty_list(self):
         assert self.ring == []
 
+    def test_eq_error(self):
+        def eq(value):
+            return self.ring == value
+
+        self.assertRaises(TypeError, lambda: eq({}))
+        self.assertRaises(TypeError, lambda: eq(None))
+        self.assertRaises(TypeError, lambda: eq(123))
+        self.assertRaises(TypeError, lambda: eq('test'))
+
 
 class Indexing(unittest.TestCase):
     def setUp(self) -> None:
@@ -69,6 +78,26 @@ class Indexing(unittest.TestCase):
         assert self.ring[-4] == self.ring[6] == self.ring[16] == 26
         self.ring[-15] = 5
         self.ring[26] = 6
+
+    def test_error_get(self):
+        self.assertRaises(IndexError, lambda: self.ring[[]])  # noqa
+        self.assertRaises(IndexError, lambda: self.ring[{}])  # noqa
+        self.assertRaises(IndexError, lambda: self.ring[None])  # noqa
+        self.assertRaises(IndexError, lambda: self.ring['test'])  # noqa
+
+    def test_error_set(self):
+        def set_val(index, value):
+            self.ring[index] = value
+        self.assertRaises(IndexError, lambda: set_val([], 1))  # noqa
+        self.assertRaises(IndexError, lambda: set_val({}, 2))  # noqa
+        self.assertRaises(IndexError, lambda: set_val(None, 3))  # noqa
+        self.assertRaises(IndexError, lambda: set_val('test', 4))  # noqa
+
+    def test_iterator(self):
+        numbers = []
+        for n in self.ring:
+            numbers.append(n)
+        assert self.ring == numbers == list(range(10))
 
     def tearDown(self) -> None:
         for i in range(10):
@@ -152,6 +181,15 @@ class Deletion(unittest.TestCase):
         assert self.ring == lrange(1, 9)
         del self.ring[4]
         assert self.ring == [1, 2, 3, 4, 6, 7, 8]
+
+    def test_error(self):
+        def del_val(index):
+            del self.ring[index]
+        self.assertRaises(IndexError, lambda: del_val([]))  # noqa
+        self.assertRaises(IndexError, lambda: del_val({}))  # noqa
+        self.assertRaises(IndexError, lambda: del_val(None))  # noqa
+        self.assertRaises(IndexError, lambda: del_val('test'))  # noqa
+
 
 
 class JosephusProblem(unittest.TestCase):
