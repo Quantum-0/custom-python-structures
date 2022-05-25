@@ -1,4 +1,4 @@
-coverage run -m unittests tests/*.py
+coverage run -m unittests tests/*
 coverage report
 coverage html
 xdg-open htmlcov/index.html

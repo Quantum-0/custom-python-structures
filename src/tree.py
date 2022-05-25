@@ -8,7 +8,6 @@ class TreeNode(Sized):
     def __init__(self, value: Any):
         self.value: Any = value
         self._children: Set[TreeNode] = set()
-        self._recursive_repr: bool = False
         self._parent = None
 
     def __del__(self):
@@ -28,8 +27,6 @@ class TreeNode(Sized):
         return sum(len(node) for node in self._children) + 1
 
     def __repr__(self):
-        if self._recursive_repr:
-            return self.__repr_indent__()
         return f"<{self.__class__.__name__}({self.value})>"
 
     def __contains__(self, item: Union[TreeNode, Any]):

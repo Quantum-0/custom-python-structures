@@ -67,3 +67,18 @@ class Relationships(unittest.TestCase):
         for node in [self.tree, self.node1, self.node2, self.node3, self.node4]:
             assert node in self.tree
             assert node.value in self.tree
+
+
+class Representation(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tree = Tree('Root')
+        self.child = TreeNode('Child')
+        self.tree += self.child
+
+    def test_repr(self):
+        assert str(self.tree) == "<TreeRoot(Root)>"
+        assert str(self.child) == "<TreeNode(Child)>"
+
+    def test_visualization(self):
+        assert self.tree.visualize() == '<TreeRoot(Root)>\n ┗━<TreeNode(Child)>'
+        assert self.child.visualize() == str(self.child)
