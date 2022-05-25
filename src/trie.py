@@ -1,8 +1,24 @@
+from collections.abc import Mapping
+from typing import Any, Iterator
+
 from src.tree import TreeNode
 
 
-class TrieNode(TreeNode):
+class TrieNode(TreeNode, Mapping):
     """Prefix Tree implimentation"""
+
+    def __iter__(self) -> Iterator:
+        raise NotImplementedError()
+
+    def __getitem__(self, key: str) -> Any:
+        for node in self._children:
+            if key.startswith(node.key):
+                return node[key]
+        raise IndexError()
+
+    def __setitem__(self, key: str, value: Any):
+        if not self.is_root:
+            raise KeyError('Cannot get element from Trie node')
 
     def __iadd__(self, other: TreeNode) -> TreeNode:
         self._children.add(other)
@@ -16,11 +32,11 @@ class TrieNode(TreeNode):
         return self
 
     @property
-    def value(self):
-        return self.parent.value + self.value
+    def key(self):
+        return self.parent.key + self.key
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}({self.value})>"
+        return f"<{self.__class__.__name__}({self.key} = {self.value})>"
 
 
 class TrieRoot(TrieNode):

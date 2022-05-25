@@ -13,8 +13,8 @@ class Empty(unittest.TestCase):
 
 class TestGeneration(unittest.TestCase):
     def setUp(self) -> None:
-        self.words_list = {"to", "tea", "ten", "ted", "too", "a", "tree"}
-        self.trie = Trie.generate(self.words_list)
+        self.words_list = ["to", "tea", "ten", "ted", "too", "a", "tree"]
+        self.trie = Trie(enumerate(self.words_list))
 
     def check_len(self):
         assert len(self.trie) == len(self.words_list)
@@ -31,15 +31,15 @@ class TestGeneration(unittest.TestCase):
 
 class TestModification(unittest.TestCase):
     def setUp(self) -> None:
-        self.words_list = {"to", "tea", "ten", "ted", "too", "a", "tree"}
-        self.trie = Trie.generate(self.words_list)
+        self.words_list = ["to", "tea", "ten", "ted", "too", "a", "tree"]
+        self.trie = Trie(enumerate(self.words_list))
 
     def check_len(self):
         assert len(self.trie) == len(self.words_list)
-        self.trie.append("take")
-        self.trie.append("tooth")
+        self.trie["take"] = 1
+        self.trie["tooth"] = 1
         assert len(self.trie) == len(self.words_list) + 2
-        self.trie.append("tea")
+        self.trie["tea"] = 0
         assert len(self.trie) == len(self.words_list) + 2
 
 
