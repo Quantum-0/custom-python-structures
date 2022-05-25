@@ -221,7 +221,3 @@ class StringRepresentation(unittest.TestCase):
     def test_repr():
         r = LoopList(range(3))
         assert str(r) == "<LoopList[0, 1, 2]>"
-
-
-if __name__ == "__main__":
-    unittest.main()

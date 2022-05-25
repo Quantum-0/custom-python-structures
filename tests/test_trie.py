@@ -23,7 +23,7 @@ class TestGeneration(unittest.TestCase):
         assert {word for word in self.words_list if word.startswith('t')} == self.trie.export(prefix='t', only_path=True)
         assert {word for word in self.words_list if word.startswith('te')} == self.trie.export(prefix='te', only_path=True)
 
-class TestModification(unittest.TestCase)
+class TestModification(unittest.TestCase):
     def setUp(self) -> None:
         self.words_list = {'to', 'tea', 'ten', 'ted', 'too', 'a', 'tree'}
         self.trie = Trie.generate(self.words_list)
