@@ -18,7 +18,7 @@ class TrieNode(TreeNode, Mapping):
 
     def __setitem__(self, key: str, value: Any):
         if not self.is_root:
-            raise KeyError('Cannot get element from Trie node')
+            raise KeyError("Cannot get element from Trie node")
 
     def __iadd__(self, other: TreeNode) -> TreeNode:
         self._children.add(other)

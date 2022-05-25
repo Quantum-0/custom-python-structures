@@ -30,7 +30,7 @@ class Empty(unittest.TestCase):
         self.assertRaises(TypeError, lambda: eq({}))
         self.assertRaises(TypeError, lambda: eq(None))
         self.assertRaises(TypeError, lambda: eq(123))
-        self.assertRaises(TypeError, lambda: eq('test'))
+        self.assertRaises(TypeError, lambda: eq("test"))
 
 
 class Indexing(unittest.TestCase):
@@ -83,15 +83,16 @@ class Indexing(unittest.TestCase):
         self.assertRaises(IndexError, lambda: self.ring[[]])  # noqa
         self.assertRaises(IndexError, lambda: self.ring[{}])  # noqa
         self.assertRaises(IndexError, lambda: self.ring[None])  # noqa
-        self.assertRaises(IndexError, lambda: self.ring['test'])  # noqa
+        self.assertRaises(IndexError, lambda: self.ring["test"])  # noqa
 
     def test_error_set(self):
         def set_val(index, value):
             self.ring[index] = value
+
         self.assertRaises(IndexError, lambda: set_val([], 1))  # noqa
         self.assertRaises(IndexError, lambda: set_val({}, 2))  # noqa
         self.assertRaises(IndexError, lambda: set_val(None, 3))  # noqa
-        self.assertRaises(IndexError, lambda: set_val('test', 4))  # noqa
+        self.assertRaises(IndexError, lambda: set_val("test", 4))  # noqa
 
     def test_iterator(self):
         numbers = []
@@ -185,11 +186,11 @@ class Deletion(unittest.TestCase):
     def test_error(self):
         def del_val(index):
             del self.ring[index]
+
         self.assertRaises(IndexError, lambda: del_val([]))  # noqa
         self.assertRaises(IndexError, lambda: del_val({}))  # noqa
         self.assertRaises(IndexError, lambda: del_val(None))  # noqa
-        self.assertRaises(IndexError, lambda: del_val('test'))  # noqa
-
+        self.assertRaises(IndexError, lambda: del_val("test"))  # noqa
 
 
 class JosephusProblem(unittest.TestCase):

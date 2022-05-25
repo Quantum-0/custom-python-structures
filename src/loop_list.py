@@ -16,7 +16,7 @@ class LoopList(Sequence):
         if isinstance(i, int):
             return self._internal_list[i % len(self)]
         if not isinstance(i, slice):
-            raise IndexError('Index must be int or slice')
+            raise IndexError("Index must be int or slice")
 
         if not isinstance(i.start, int) and i.start is not None:
             raise IndexError()
@@ -41,7 +41,7 @@ class LoopList(Sequence):
         if isinstance(i, int):
             self._internal_list[i % len(self)] = value
         else:
-            raise IndexError('Index must be int')
+            raise IndexError("Index must be int")
 
     def __delitem__(self, i: int) -> None:
         if len(self) == 0:
