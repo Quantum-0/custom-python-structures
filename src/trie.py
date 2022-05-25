@@ -25,7 +25,8 @@ class TrieNode(TreeNode):
 
 class TrieRoot(TrieNode):
     def __init__(self):
-        super().__init__('')
+        super().__init__("")
         self.root = self
+
 
 Trie = TrieRoot
