@@ -5,7 +5,7 @@ from collections.abc import Callable, Iterator
 from enum import Enum, unique, auto, IntEnum
 from typing import Tuple, Union, List, Generic, TypeVar, Optional, Any
 
-# Matrix Value Type
+# Matrix Value Type & Matrix Key Type
 _MVT = TypeVar('_MVT')  # Union[int, float, complex] # + maybe bool
 _MKT = TypeVar('_MKT', Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice])
 
@@ -93,7 +93,7 @@ class Matrix(Generic[_MVT]):
         return self._width, self._height
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self._values}"
+        return f"<{self.__class__.__name__}({self._values})>"
 
     # TODO:
     class Walkthrow(Enum):
@@ -310,7 +310,7 @@ class Matrix(Generic[_MVT]):
         assert operation is not None
         # Check argument
         if not isinstance(other, Matrix):
-            raise AttributeError('Other argument must be bit matrix')
+            raise AttributeError('Other argument must be a matrix')
         if self.size != other.size:
             raise AttributeError('Invalid matrix size')
         for i in range(self.width):
@@ -318,11 +318,20 @@ class Matrix(Generic[_MVT]):
                 self._values[j][i] = operation(self._values[j][i], other._values[j][i])
         return self
 
-    def __add__(self, other: Matrix) -> Matrix[_MVT]:
+    def __add__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
         return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x+y)
+
+    def __iadd__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
+        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x+y)
 
     def __sub__(self, other: Matrix) -> Matrix[_MVT]:
         return self.__base_binary_operation_creating_new_entity__(
+            other,
+            lambda x, y: x and not y if isinstance(x, bool) and isinstance(y, bool) else x-y
+        )
+
+    def __isub__(self, other: Matrix) -> Matrix[_MVT]:
+        return self.__base_binary_operation_applying_to_self__(
             other,
             lambda x, y: x and not y if isinstance(x, bool) and isinstance(y, bool) else x-y
         )
@@ -388,10 +397,7 @@ class Matrix(Generic[_MVT]):
         if isinstance(other, bool):
             return all([all([elem is other for elem in row]) for row in self._values])
         else:
-            try:
-                return self._values == other
-            except ValueError:
-                return False
+            return self._values == other
 
     @property
     def rotated_counterclockwise(self):

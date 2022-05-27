@@ -13,6 +13,14 @@ class Empty(unittest.TestCase):
         assert self.matrix.size == (0, 0)
 
 
+class Representation(unittest.TestCase):
+    def setUp(self) -> None:
+        self.matrix = Matrix(2, 2, [[1,2],[3,4]])
+
+    def test_repr(self):
+        assert str(self.matrix) == "<Matrix([[1, 2], [3, 4]])>"
+
+
 class Equal(unittest.TestCase):
     def setUp(self) -> None:
         self.zero3 = Matrix.zero_matrix(3)
@@ -41,7 +49,9 @@ class Equal(unittest.TestCase):
         assert self.zero2 in Matrix.from_nested_list(zero2x3)
         assert one2x3 in self.one3
         assert self.one2 in Matrix.from_nested_list(one2x3)
-        assert self.zero3 not in zero2x3
+        assert self.zero3 not in self.zero2
+        assert Matrix.from_joined_lists(3, values=range(9)) not in Matrix.from_joined_lists(2, values=range(4))
+        assert Matrix.from_joined_lists(2, values=range(4)) not in Matrix.from_joined_lists(3, values=range(9))
 
 
 class PreDefined(unittest.TestCase):
@@ -80,7 +90,8 @@ class Generation(unittest.TestCase):
         m8 = Matrix.from_joined_lists(3, values=[0] * 9)
         m9 = Matrix.from_joined_lists(3, 3, values=[0] * 9)
         m10 = Matrix.generate(3, 3, 0)
-        assert m1._values == m2._values == m3._values == m4._values == m5._values == m6._values == m7._values == m8._values == m9._values == m10._values
+        m11 = Matrix.zero_matrix(size=(3, 3))
+        assert m1._values == m2._values == m3._values == m4._values == m5._values == m6._values == m7._values == m8._values == m9._values == m10._values == m11._values
 
     def test_generation_lambda(self):
         m = Matrix.generate(3, 3, range(9).__iter__())
@@ -278,11 +289,13 @@ class LogicWithBitMatrix(unittest.TestCase):
         # self.D1 = Matrix.zero_matrix(3)
         self.E = Matrix.identity(3, boolean_matrix=True)
         # self.E1 = Matrix.identity(3)
+        self.F = Matrix.zero_matrix(size=(3, 2), boolean_matrix=True)
 
     def test_boolean_generator(self):
         assert self.D == False
         assert all(self.E.main_diagonal)
         assert self.E == [[True,False,False],[False,True,False],[False,False,True]]
+        assert self.F == [[False, False, False], [False, False, False]]
 
     def test_compare_to_bool(self):
         # Matrix.identity(3) == True == error
@@ -302,14 +315,20 @@ class LogicWithBitMatrix(unittest.TestCase):
         assert self.A & self.B == self.B & self.A
         assert self.A & self.B == [[True, False], [False, False]]
         self.assertRaises(AttributeError, lambda: self.A & self.C)
-        self.assertRaises(AttributeError, lambda: self.A & 123)
+        self.assertRaises(AttributeError, lambda: self.A & 123)  # noqa
+        assert self.A == [[True, True], [False, False]]
+        self.A &= self.B
+        assert self.A == [[True, False], [False, False]]
 
     def test_or(self):
         assert self.A | self.A == self.A
         assert self.A | self.B == self.B | self.A
         assert self.A | self.B == [[True, True], [True, False]]
         self.assertRaises(AttributeError, lambda: self.A | self.C)
-        self.assertRaises(AttributeError, lambda: self.A | 123)
+        self.assertRaises(AttributeError, lambda: self.A | 123)  # noqa
+        assert self.A == [[True, True], [False, False]]
+        self.A |= self.B
+        assert self.A == [[True, True], [True, False]]
 
     def test_not(self):
         assert not self.A == [[False, False], [True, True]]
@@ -321,10 +340,26 @@ class LogicWithBitMatrix(unittest.TestCase):
         assert self.A - self.B == [[False, True], [False, False]]
         assert self.B - self.A == [[False, False], [True, False]]
         self.assertRaises(AttributeError, lambda: self.A - self.C)
-        self.assertRaises(AttributeError, lambda: self.A - 123)
+        self.assertRaises(AttributeError, lambda: self.A - 123)  # noqa
+        assert self.A == [[True, True], [False, False]]
+        self.A -= self.B
+        assert self.A == [[False, True], [False, False]], self.A
 
     def test_xor(self):
         assert self.A ^ self.B == self.B ^ self.A == [[False, True], [True, False]]
         assert (self.A | self.B) - (self.A & self.B) == self.A ^ self.B
         self.assertRaises(AttributeError, lambda: self.A ^ self.C)
-        self.assertRaises(AttributeError, lambda: self.A ^ 123)
+        self.assertRaises(AttributeError, lambda: self.A ^ 123)  # noqa
+        assert self.A == [[True, True], [False, False]]
+        self.A ^= self.B
+        assert self.A == [[False, True], [True, False]]
+
+    def test_errors(self):
+        def test1(): self.A &= self.C
+        def test2(): self.A |= self.C
+        def test3(): self.A ^= self.C
+        def test4(): self.A &= 'test'
+        self.assertRaises(AttributeError, test1)
+        self.assertRaises(AttributeError, test2)
+        self.assertRaises(AttributeError, test3)
+        self.assertRaises(AttributeError, test4)
