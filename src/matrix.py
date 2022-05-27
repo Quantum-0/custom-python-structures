@@ -19,7 +19,7 @@ class Matrix(Generic[_MVT]):
         if check_sizes:
             raise NotImplementedError
 
-    def __getitem__(self, index: Union[Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice]]):
+    def __getitem__(self, index: Union[Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice]]) -> _MVT:
         # Type Check
         if not isinstance(index, tuple):
             raise IndexError("Index must be tuple")
@@ -35,14 +35,40 @@ class Matrix(Generic[_MVT]):
         # if (isinstance(index[0], slice) and index[0].step != None) or (isinstance(index[1], slice) and index[1].step != None):
         #     raise IndexError("Matrix doesn't support slice step")
 
-        return self._values[index[1]][index[0]]
+        # Y is int
+        if isinstance(index[1], int):
+            return self._values[index[1]][index[0]][:] if isinstance(index[0], slice) else self._values[index[1]][index[0]]
+        else:
+            return [row[index[0]] for row in self._values[index[1]]]
 
 
-    def __setitem__(self, key, value: _MVT):
-        pass
+    def __setitem__(
+            self,
+            key: Union[Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice]],
+            value: _MVT):
+        # Type Check
+        if not isinstance(key, tuple):
+            raise IndexError("Index must be tuple")
+        if len(key) != 2:
+            raise IndexError("Index must be tuple of two values")
+        if not isinstance(key[0], (int, slice)) or not isinstance(key[1], (int, slice)):
+            raise IndexError("Index must be tuple of int/slice values")
+        if not isinstance(value, self._inner_type):
+            raise ValueError(f"Value must be type {self._inner_type}")
+        # Bounds
+        if (isinstance(key[0], int) and (key[0] < 0 or key[0] >= self._width)) or \
+                (isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height)):
+            # (isinstance(index[0], slice) and (index[0] and)):
+            raise IndexError("Matrix doesn't support negative or overflow indexes")
 
-    def transpose(self) -> Matrix[_MVT]:
-        pass
+        if isinstance(key[0], int) and isinstance(key[1], int):
+            self._values[key[1]][key[0]] = value
+        raise NotImplementedError()
+
+    def transpose(self) -> None:
+        self._values = [[self._values[j][i] for j in range(len(self._values))] for i in range(len(self._values[0]))]
+        # self._values = list(map(list, zip(*self._values)))
+        self._height, self._width = self._width, self._height
 
     @property
     def width(self) -> int:
@@ -142,11 +168,41 @@ class Matrix(Generic[_MVT]):
     def main_diagonal(self) -> list:
         """ Returns list of main diagonal elements """
         if not self.is_square:
-            raise
+            raise NotSquareMatrix()
+        return [self._values[i][i] for i in range(self.width)]
 
     @property
     def trace(self) -> Union[int, Any]:
         return sum(self.main_diagonal)
+
+    def _minor(self, i, j):
+        return Matrix(self.width-1, self.height-1,
+                      [row[:j] + row[j + 1:] for row in (self._values[:i] + self._values[i + 1:])])
+
+    @property
+    def determinant(self) -> float:
+        if not self.is_square:
+            raise NotSquareMatrix()
+        m = [row[:] for row in self._values]
+        for fd in range(self.width):
+            for i in range(fd+1, self.width):
+                if m[fd][fd] == 0:
+                    m[fd][fd] = 1.0e-18
+                s = m[i][fd] / m[fd][fd]
+                for j in range(self.width):
+                    m[i][j] = m[i][j] - s*m[fd][j]
+        p = 1.0
+        for i in range(self.width):
+            p *= m[i][i]
+        return round(p, 10)
+        # if self.width == 2:
+        #     return self._values[0][0] * self._values[1][1] - self._values[0][1] * self._values[1][0]
+        #
+        # determinant = 0
+        # for c in range(self.width):
+        #     determinant += ((-1) ** c) * self._values[0][c] * self.determinant(self._minor(0, c))
+        # return determinant
+
 
     def __contains__(self, item: Matrix[_MVT] or List[List[_MVT]]) -> bool:
         other = Matrix.from_nested_list(item) if isinstance(item, List) else item
@@ -170,13 +226,71 @@ class Matrix(Generic[_MVT]):
 
     def __invert__(self):
         """ Overrides operator ~A """
-        raise NotImplementedError()
+        # raise NotImplementedError()
+        if not self.is_square:
+            raise NotSquareMatrix()
+        d = self.determinant
+        if self.width == 2:
+            return Matrix.from_nested_list([[self._values[1][1] / d, -1 * self._values[0][1] / d],
+                    [-1 * self._values[1][0] / d, self._values[0][0] / d]])
+        else:
+            NotImplementedError('Inverse matrix for > 2x2 is not supported yet')
 
     def __add__(self, other: Matrix) -> Matrix[_MVT]:
-        pass
+        if not isinstance(other, Matrix):
+            raise AttributeError()
+        if self.size != other.size:
+            raise AttributeError('Invalid matrix size')
 
-    def __mul__(self, other: Matrix) -> Matrix[_MVT]:
-        pass
+        res = [[self._values[j][i] + other._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        return Matrix.from_nested_list(res)
+
+    def __sub__(self, other: Matrix) -> Matrix[_MVT]:
+        if not isinstance(other, Matrix):
+            raise AttributeError()
+        if self.size != other.size:
+            raise AttributeError('Invalid matrix size')
+
+        res = [[self._values[j][i] - other._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        return Matrix.from_nested_list(res)
+
+    def __itruediv__(self, other: Union[int, float]) -> Matrix[_MVT]:
+        if not isinstance(other, numbers.Number):
+            raise ValueError()
+
+        for i in range(self.width):
+            for j in range(self.height):
+                self._values[i][j] /= other
+
+        return self
+
+    def __imul__(self, other: Union[Matrix, int, float]) -> Matrix[_MVT]:
+        if isinstance(other, Matrix):
+            raise NotImplementedError()
+
+        for i in range(self.width):
+            for j in range(self.height):
+                self._values[i][j] *= other
+
+        return self
+
+    def __mul__(self, other: Union[Matrix, _MVT]) -> Matrix[_MVT]:
+        if not isinstance(other, Matrix):
+            return Matrix.from_nested_list([[elem * other for elem in row] for row in self._values])
+
+        if self.width != other.height:
+            raise ValueError('Incorrect matrix size for multiplication')
+
+        c = []
+        for i in range(0, self.width):
+            temp = []
+            for j in range(0, other.height):
+                s = 0
+                for k in range(0, self.height):
+                    s += self._values[i][k] * other._values[k][j]
+                temp.append(s)
+            c.append(temp)
+        return Matrix(self.width, other.width, c)
 
     def __eq__(self, other: List[List[_MVT]] or Matrix[_MVT]) -> bool:
         if isinstance(other, Matrix):
@@ -186,3 +300,17 @@ class Matrix(Generic[_MVT]):
                 return self._values == other
             except ValueError:
                 return False
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self._values}"
+
+
+class BitMatrix(Matrix[bool]):
+    def zero_matrix(cls, size) -> Matrix[_MVT]:
+        return cls.generate(size, size, False)
+
+    def identity(cls, size) -> Matrix[_MVT]:
+        return cls.generate(size, size, lambda x,y: x==y)
+
+    def __and__(self, other: BitMatrix):
+        pass
