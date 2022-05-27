@@ -3,7 +3,7 @@ import unittest
 from src.trie import Trie
 
 
-@unittest.skip('Not done yet')
+@unittest.skip("Not done yet")
 class Empty(unittest.TestCase):
     def setUp(self) -> None:
         self.trie = Trie()
@@ -12,7 +12,7 @@ class Empty(unittest.TestCase):
         assert len(self.trie) == 0
 
 
-@unittest.skip('Not done yet')
+@unittest.skip("Not done yet")
 class TestGeneration(unittest.TestCase):
     def setUp(self) -> None:
         self.words_list = ["to", "tea", "ten", "ted", "too", "a", "tree"]
@@ -23,15 +23,15 @@ class TestGeneration(unittest.TestCase):
 
     def check_export_set_of_words(self):
         assert self.words_list == self.trie.export(prefix=None)
-        assert {
-            word for word in self.words_list if word.startswith("t")
-        } == self.trie.export(prefix="t", only_path=True)
-        assert {
-            word for word in self.words_list if word.startswith("te")
-        } == self.trie.export(prefix="te", only_path=True)
+        assert {word for word in self.words_list if word.startswith("t")} == self.trie.export(
+            prefix="t", only_path=True
+        )
+        assert {word for word in self.words_list if word.startswith("te")} == self.trie.export(
+            prefix="te", only_path=True
+        )
 
 
-@unittest.skip('Not done yet')
+@unittest.skip("Not done yet")
 class TestModification(unittest.TestCase):
     def setUp(self) -> None:
         self.words_list = ["to", "tea", "ten", "ted", "too", "a", "tree"]

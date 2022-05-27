@@ -6,8 +6,8 @@ from enum import Enum, unique, auto, IntEnum
 from typing import Tuple, Union, List, Generic, TypeVar, Optional, Any
 
 # Matrix Value Type & Matrix Key Type
-_MVT = TypeVar('_MVT')  # Union[int, float, complex] # + maybe bool
-_MKT = TypeVar('_MKT', Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice])
+_MVT = TypeVar("_MVT")  # Union[int, float, complex] # + maybe bool
+_MKT = TypeVar("_MKT", Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice])
 
 
 class NotSquareMatrix(ValueError):
@@ -22,8 +22,8 @@ class Matrix(Generic[_MVT]):
         self._values: List[List[_MVT]] = values
 
     def __getitem__(
-            self,
-            index: _MKT,
+        self,
+        index: _MKT,
     ) -> _MVT:
         # Type Check
         if not isinstance(index, tuple):
@@ -33,23 +33,28 @@ class Matrix(Generic[_MVT]):
         if not isinstance(index[0], (int, slice)) or not isinstance(index[1], (int, slice)):
             raise IndexError("Index must be tuple of int/slice values")
         # Bounds
-        if (isinstance(index[0], int) and (index[0] < 0 or index[0] >= self._width)) or \
-            (isinstance(index[1], int) and (index[1] < 0 or index[1] >= self._height)):
-            #(isinstance(index[0], slice) and (index[0] and)):
+        if (isinstance(index[0], int) and (index[0] < 0 or index[0] >= self._width)) or (
+            isinstance(index[1], int) and (index[1] < 0 or index[1] >= self._height)
+        ):
+            # (isinstance(index[0], slice) and (index[0] and)):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
         # if (isinstance(index[0], slice) and index[0].step != None) or (isinstance(index[1], slice) and index[1].step != None):
         #     raise IndexError("Matrix doesn't support slice step")
 
         # Y is int
         if isinstance(index[1], int):
-            return self._values[index[1]][index[0]][:] if isinstance(index[0], slice) else self._values[index[1]][index[0]]
+            return (
+                self._values[index[1]][index[0]][:]
+                if isinstance(index[0], slice)
+                else self._values[index[1]][index[0]]
+            )
         else:
             return [row[index[0]] for row in self._values[index[1]]]
 
     def __setitem__(
-            self,
-            key: _MKT,
-            value: _MVT,
+        self,
+        key: _MKT,
+        value: _MVT,
     ) -> None:
         # Type Check
         if not isinstance(key, tuple):
@@ -61,8 +66,9 @@ class Matrix(Generic[_MVT]):
         if not isinstance(value, self._inner_type):
             raise ValueError(f"Value must be type {self._inner_type}")
         # Bounds
-        if (isinstance(key[0], int) and (key[0] < 0 or key[0] >= self._width)) or \
-                (isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height)):
+        if (isinstance(key[0], int) and (key[0] < 0 or key[0] >= self._width)) or (
+            isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height)
+        ):
             # (isinstance(index[0], slice) and (index[0] and)):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
 
@@ -76,7 +82,7 @@ class Matrix(Generic[_MVT]):
             return False
         for y in range(self.height - other.height + 1):
             for x in range(self.width - other.width + 1):
-                if self[x:x+other.width, y:y+other.height] == other:
+                if self[x : x + other.width, y : y + other.height] == other:
                     return True
         return False
 
@@ -105,14 +111,14 @@ class Matrix(Generic[_MVT]):
 
     @classmethod
     def generate(
-            cls,
-            width,
-            height,
-            value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
-            *,
-            walkthrow: Walkthrow = Walkthrow.DEFAULT,
+        cls,
+        width,
+        height,
+        value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
+        *,
+        walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix[_MVT]:
-        """ Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y """
+        """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
         values = list()
         for y in range(height):
             row = list()
@@ -123,7 +129,7 @@ class Matrix(Generic[_MVT]):
                     elif value.__code__.co_argcount == 0:  # noqa
                         row.append(value())
                     else:
-                        raise ValueError('Incorrect number of arguments for generator')
+                        raise ValueError("Incorrect number of arguments for generator")
                 elif isinstance(value, Iterator):
                     row.append(next(value))
                 else:
@@ -137,12 +143,12 @@ class Matrix(Generic[_MVT]):
             raise ValueError()
         h = len(values)
         if h == 0:
-            raise ValueError('Cannot create matrix from empty list')
+            raise ValueError("Cannot create matrix from empty list")
         w = len(values[0])
         if w == 0:
-            raise ValueError('Cannot create matrix with width = 0')
+            raise ValueError("Cannot create matrix with width = 0")
         if not all(len(row) == w for row in values):
-            raise ValueError('All rows must have equal length')
+            raise ValueError("All rows must have equal length")
         return Matrix(w, h, values)
 
     @classmethod
@@ -151,9 +157,9 @@ class Matrix(Generic[_MVT]):
         if isinstance(values, range):
             values = list(values)
         for i in range(0, len(values), width):
-            lists.append(values[i:i+width])
+            lists.append(values[i : i + width])
         if height and len(lists) != height or len(lists[-1]) != width:
-            raise ValueError('Incorrect elements count')
+            raise ValueError("Incorrect elements count")
         return cls.from_nested_list(lists)
 
     @classmethod
@@ -180,13 +186,13 @@ class Matrix(Generic[_MVT]):
 
     @classmethod
     def input_matrix(
-            cls,
-            height: Optional[int] = None,
-            width: Optional[int] = None,
-            postprocess: Callable[[str]:_MVT] = lambda x: int(x),
-            *,
-            width_first: bool = False,
-            walkthrow: Walkthrow = Walkthrow.DEFAULT,
+        cls,
+        height: Optional[int] = None,
+        width: Optional[int] = None,
+        postprocess: Callable[[str]:_MVT] = lambda x: int(x),
+        *,
+        width_first: bool = False,
+        walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix[_MVT]:
         if width_first:
             height = height or int(input())
@@ -218,7 +224,7 @@ class Matrix(Generic[_MVT]):
 
     @property
     def main_diagonal(self) -> List[_MVT]:
-        """ Returns list of main diagonal elements """
+        """Returns list of main diagonal elements"""
         if not self.is_square:
             raise NotSquareMatrix()
         return [self._values[i][i] for i in range(self.width)]
@@ -229,13 +235,9 @@ class Matrix(Generic[_MVT]):
 
     def get_minor(self, i, j):
         return Matrix(
-            self.width-1,
-            self.height-1,
-            [
-                row[:j] + row[j+1:]
-                for row in
-                (self._values[:i] + self._values[i + 1:])
-            ]
+            self.width - 1,
+            self.height - 1,
+            [row[:j] + row[j + 1 :] for row in (self._values[:i] + self._values[i + 1 :])],
         )
 
     @property
@@ -244,12 +246,12 @@ class Matrix(Generic[_MVT]):
         #     raise NotSquareMatrix()
         m = [row[:] for row in self._values]
         for fd in range(self.width):
-            for i in range(fd+1, self.width):
+            for i in range(fd + 1, self.width):
                 if m[fd][fd] == 0:
                     m[fd][fd] = 1.0e-18
                 s = m[i][fd] / m[fd][fd]
                 for j in range(self.width):
-                    m[i][j] = m[i][j] - s*m[fd][j]
+                    m[i][j] = m[i][j] - s * m[fd][j]
         p = 1.0
         for i in range(self.width):
             p *= m[i][i]
@@ -265,75 +267,74 @@ class Matrix(Generic[_MVT]):
     # ======== Math operations on matrix ========
 
     def __invert__(self):
-        """ Overrides operator ~A """
+        """Overrides operator ~A"""
         # raise NotImplementedError()
         # if not self.is_square:
         #     raise NotSquareMatrix()
         d = self.determinant
         if self.width == 2:
-            return Matrix.from_nested_list([[self._values[1][1] / d, -1 * self._values[0][1] / d],
-                    [-1 * self._values[1][0] / d, self._values[0][0] / d]])
+            return Matrix.from_nested_list(
+                [
+                    [self._values[1][1] / d, -1 * self._values[0][1] / d],
+                    [-1 * self._values[1][0] / d, self._values[0][0] / d],
+                ]
+            )
         else:
-            raise NotImplementedError('Inverse matrix for > 2x2 is not supported yet')
+            raise NotImplementedError("Inverse matrix for > 2x2 is not supported yet")
 
     def __base_binary_operation_creating_new_entity__(
-            self,
-            other: Matrix[_MVT] = None,
-            operation: Callable[[_MVT, _MVT], _MVT] = None,
+        self,
+        other: Matrix[_MVT] = None,
+        operation: Callable[[_MVT, _MVT], _MVT] = None,
     ) -> Matrix[_MVT]:
         # Check if operation is defined
         assert operation is not None
         # Check argument
         if not isinstance(other, Matrix):
-            raise AttributeError('Other argument must be a matrix')
+            raise AttributeError("Other argument must be a matrix")
         if self.size != other.size:
-            raise AttributeError('Invalid matrix size')
+            raise AttributeError("Invalid matrix size")
         # Calculating the result
         return Matrix(
             width=self.width,
             height=self.height,
             values=[
-                [
-                    operation(self._values[j][i], other._values[j][i])
-                    for i in range(self.width)
-                ]
+                [operation(self._values[j][i], other._values[j][i]) for i in range(self.width)]
                 for j in range(self.height)
-            ]
+            ],
         )
 
     def __base_binary_operation_applying_to_self__(
-            self,
-            other: Matrix[_MVT] = None,
-            operation: Callable[[_MVT, _MVT], _MVT] = None,
+        self,
+        other: Matrix[_MVT] = None,
+        operation: Callable[[_MVT, _MVT], _MVT] = None,
     ) -> Matrix[_MVT]:
         # Check if operation is defined
         assert operation is not None
         # Check argument
         if not isinstance(other, Matrix):
-            raise AttributeError('Other argument must be a matrix')
+            raise AttributeError("Other argument must be a matrix")
         if self.size != other.size:
-            raise AttributeError('Invalid matrix size')
+            raise AttributeError("Invalid matrix size")
         for i in range(self.width):
             for j in range(self.height):
                 self._values[j][i] = operation(self._values[j][i], other._values[j][i])
         return self
 
     def __add__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
-        return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x+y)
+        return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x + y)
 
     def __iadd__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
-        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x+y)
+        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x + y)
 
     def __sub__(self, other: Matrix) -> Matrix[_MVT]:
         return self.__base_binary_operation_creating_new_entity__(
-            other,
-            lambda x, y: x and not y if isinstance(x, bool) and isinstance(y, bool) else x-y
+            other, lambda x, y: x and not y if isinstance(x, bool) and isinstance(y, bool) else x - y
         )
 
     def __isub__(self, other: Matrix) -> Matrix[_MVT]:
         return self.__base_binary_operation_applying_to_self__(
-            other,
-            lambda x, y: x and not y if isinstance(x, bool) and isinstance(y, bool) else x-y
+            other, lambda x, y: x and not y if isinstance(x, bool) and isinstance(y, bool) else x - y
         )
 
     def __itruediv__(self, other: Union[int, float]) -> Matrix[_MVT]:
@@ -378,7 +379,7 @@ class Matrix(Generic[_MVT]):
             raise AttributeError()
 
         if self.width != other.height:
-            raise AttributeError('Incorrect matrix size for multiplication')
+            raise AttributeError("Incorrect matrix size for multiplication")
 
         c = []
         for i in range(0, self.width):
@@ -401,11 +402,19 @@ class Matrix(Generic[_MVT]):
 
     @property
     def rotated_counterclockwise(self):
-        return Matrix(self._height, self._width, [[self._values[j][i] for j in range(self.height)] for i in range(self.width - 1, -1, -1)])
+        return Matrix(
+            self._height,
+            self._width,
+            [[self._values[j][i] for j in range(self.height)] for i in range(self.width - 1, -1, -1)],
+        )
 
     @property
     def rotated_clockwise(self):
-        return Matrix(self._height, self._width, [[self._values[j][i] for j in range(self.height - 1, -1, -1)] for i in range(0, self.width)])
+        return Matrix(
+            self._height,
+            self._width,
+            [[self._values[j][i] for j in range(self.height - 1, -1, -1)] for i in range(0, self.width)],
+        )
 
     @property
     def mirrored_horizontaly(self):
@@ -418,16 +427,16 @@ class Matrix(Generic[_MVT]):
     # ======== Boolean logic operations on matrix ========
 
     def __base_boolean_operation_creating_new_entity__(
-            self,
-            other: Matrix[bool] = None,
-            operation: Callable[[bool, bool], bool] = None,
+        self,
+        other: Matrix[bool] = None,
+        operation: Callable[[bool, bool], bool] = None,
     ) -> Matrix[bool]:
         return self.__base_binary_operation_creating_new_entity__(other, operation)
 
     def __base_boolean_operation_applying_to_self__(
-            self,
-            other: Matrix[bool] = None,
-            operation: Callable[[bool, bool], bool] = None,
+        self,
+        other: Matrix[bool] = None,
+        operation: Callable[[bool, bool], bool] = None,
     ) -> Matrix[bool]:
         return self.__base_binary_operation_applying_to_self__(other, operation)
 
@@ -451,10 +460,6 @@ class Matrix(Generic[_MVT]):
 
     def __neg__(self):
         return [
-            [
-                not self._values[j][i]
-                if (self._values[j][i], bool)
-                else -self._values[j][i]
-                for i in range(self.width)]
+            [not self._values[j][i] if (self._values[j][i], bool) else -self._values[j][i] for i in range(self.width)]
             for j in range(self.height)
         ]

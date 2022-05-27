@@ -42,12 +42,7 @@ class TreeNode(Sized):
         return (
             str_indent
             + str(self)
-            + "".join(
-                [
-                    "\n" + node.__repr_indent__(indent=indent + 1)
-                    for node in self._children
-                ]
-            )
+            + "".join(["\n" + node.__repr_indent__(indent=indent + 1) for node in self._children])
         )
 
     def is_child_for(self, parent: TreeNode, on_all_tree: bool) -> bool:
@@ -55,24 +50,14 @@ class TreeNode(Sized):
             return True
         if not on_all_tree:
             return False
-        return any(
-            [
-                self.is_child_for(parent=node, on_all_tree=True)
-                for node in parent._children
-            ]
-        )
+        return any([self.is_child_for(parent=node, on_all_tree=True) for node in parent._children])
 
     def is_parent_for(self, child: TreeNode, on_all_tree: bool) -> bool:
         if child in self._children:
             return True
         if not on_all_tree:
             return False
-        return any(
-            [
-                node.is_parent_for(child=child, on_all_tree=True)
-                for node in self._children
-            ]
-        )
+        return any([node.is_parent_for(child=child, on_all_tree=True) for node in self._children])
 
 
 class TreeRoot(TreeNode):
