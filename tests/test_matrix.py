@@ -259,20 +259,20 @@ class LogicWithBitMatrix(unittest.TestCase):
         assert self.A & self.A == self.A
         assert self.A & self.B == self.B & self.A
         assert self.A & self.B == [[True, False], [False, False]]
-        assert self.A & True == self.A
-        assert self.A & False == False
 
     def test_or(self):
         assert self.A | self.A == self.A
         assert self.A | self.B == self.B | self.A
         assert self.A | self.B == [[True, True], [True, False]]
-        assert self.A | True == True
-        assert self.A | False == self.A
 
     def test_not(self):
-        assert -self.A == [[False, False], [True, True]]
-        assert -self.B == [[False, True], [False, True]]
+        assert not self.A == [[False, False], [True, True]]
+        assert not self.B == [[False, True], [False, True]]
+
+    def test_minus(self):
+        assert self.A - self.B == [[False, True], [False, False]]
+        assert self.B - self.A == [[False, False], [True, False]]
 
     def test_xor(self):
         assert self.A ^ self.B == self.B ^ self.A == [[False, True], [True, False]]
-        assert self.A | self.B - self.A & self.B == self.A ^ self.B
+        assert (self.A | self.B) - (self.A & self.B) == self.A ^ self.B

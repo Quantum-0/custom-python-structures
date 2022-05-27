@@ -252,7 +252,13 @@ class Matrix(Generic[_MVT]):
         if self.size != other.size:
             raise AttributeError('Invalid matrix size')
 
-        res = [[self._values[j][i] - other._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        res = [[
+            self._values[j][i] and not other._values[j][i]
+            if (isinstance(self._values[j][i], bool) and isinstance(other._values[j][i], bool))
+            else self._values[j][i] - other._values[j][i]
+            for i in range(self.width)]
+            for j in range(self.height)
+        ]
         return Matrix.from_nested_list(res)
 
     def __itruediv__(self, other: Union[int, float]) -> Matrix[_MVT]:
@@ -293,9 +299,11 @@ class Matrix(Generic[_MVT]):
             c.append(temp)
         return Matrix(self.width, other.width, c)
 
-    def __eq__(self, other: List[List[_MVT]] or Matrix[_MVT]) -> bool:
+    def __eq__(self, other: List[List[_MVT]] or Matrix[_MVT] or bool) -> bool:
         if isinstance(other, Matrix):
             return self.size == other.size and self._values == other._values
+        if isinstance(other, bool):
+            return all([all([elem is other for elem in row]) for row in self._values])
         else:
             try:
                 return self._values == other
@@ -318,6 +326,37 @@ class Matrix(Generic[_MVT]):
     def mirrored_verticaly(self):
         return Matrix(self._width, self.height, [row[::] for row in self._values[::-1]])
 
+    def __and__(self, other: Matrix) -> Matrix:
+        if not isinstance(other, Matrix):
+            raise AttributeError()
+        if self.size != other.size:
+            raise AttributeError('Invalid matrix size')
+
+        res = [[self._values[j][i] & other._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        return Matrix.from_nested_list(res)
+
+    def __or__(self, other: Matrix) -> Matrix:
+        if not isinstance(other, Matrix):
+            raise AttributeError()
+        if self.size != other.size:
+            raise AttributeError('Invalid matrix size')
+
+        res = [[self._values[j][i] | other._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        return Matrix.from_nested_list(res)
+
+    def __xor__(self, other: Matrix) -> Matrix:
+        if not isinstance(other, Matrix):
+            raise AttributeError()
+        if self.size != other.size:
+            raise AttributeError('Invalid matrix size')
+
+        res = [[self._values[j][i] ^ other._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        return BitMatrix.from_nested_list(res)
+
+    def __neg__(self):
+        res = [[not self._values[j][i] if (self._values[j][i],bool) else -self._values[j][i] for i in range(self.width)] for j in range(self.height)]
+        return BitMatrix.from_nested_list(res)
+
     def __repr__(self):
         return f"<{self.__class__.__name__} {self._values}"
 
@@ -328,6 +367,3 @@ class BitMatrix(Matrix[bool]):
 
     def identity(cls, size) -> Matrix[_MVT]:
         return cls.generate(size, size, lambda x,y: x==y)
-
-    def __and__(self, other: BitMatrix):
-        pass
