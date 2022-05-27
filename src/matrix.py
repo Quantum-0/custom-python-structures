@@ -44,9 +44,7 @@ class Matrix(Generic[_MVT]):
         # Y is int
         if isinstance(index[1], int):
             return (
-                self._values[index[1]][index[0]][:]
-                if isinstance(index[0], slice)
-                else self._values[index[1]][index[0]]
+                self._values[index[1]][index[0]][:] if isinstance(index[0], slice) else self._values[index[1]][index[0]]
             )
         else:
             return [row[index[0]] for row in self._values[index[1]]]
@@ -460,6 +458,9 @@ class Matrix(Generic[_MVT]):
 
     def __neg__(self):
         return [
-            [not self._values[j][i] if isinstance(self._values[j][i], bool) else -self._values[j][i] for i in range(self.width)]
+            [
+                not self._values[j][i] if isinstance(self._values[j][i], bool) else -self._values[j][i]
+                for i in range(self.width)
+            ]
             for j in range(self.height)
         ]
