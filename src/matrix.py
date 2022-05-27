@@ -460,6 +460,6 @@ class Matrix(Generic[_MVT]):
 
     def __neg__(self):
         return [
-            [not self._values[j][i] if (self._values[j][i], bool) else -self._values[j][i] for i in range(self.width)]
+            [not self._values[j][i] if isinstance(self._values[j][i], bool) else -self._values[j][i] for i in range(self.width)]
             for j in range(self.height)
         ]
