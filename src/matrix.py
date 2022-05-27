@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numbers
 from collections.abc import Callable, Iterator
 from typing import Tuple, Union, List, Generic, TypeVar, Optional, Any
 
@@ -300,6 +301,22 @@ class Matrix(Generic[_MVT]):
                 return self._values == other
             except ValueError:
                 return False
+
+    @property
+    def rotated_counterclockwise(self):
+        return Matrix(self._height, self._width, [[self._values[j][i] for j in range(self.height)] for i in range(self.width - 1, -1, -1)])
+
+    @property
+    def rotated_clockwise(self):
+        return Matrix(self._height, self._width, [[self._values[j][i] for j in range(self.height - 1, -1, -1)] for i in range(0, self.width)])
+
+    @property
+    def mirrored_horizontaly(self):
+        return Matrix(self._width, self.height, [row[::-1] for row in self._values])
+
+    @property
+    def mirrored_verticaly(self):
+        return Matrix(self._width, self.height, [row[::] for row in self._values[::-1]])
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self._values}"

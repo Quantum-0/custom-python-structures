@@ -209,6 +209,9 @@ class Math(unittest.TestCase):
 class MirroringAndRotating(unittest.TestCase):
     def setUp(self) -> None:
         self.M = Matrix.from_joined_lists(3, values=range(9))
+        # 0 1 2
+        # 3 4 5
+        # 6 7 8
 
     def test_vertical_mirroring(self):
         assert self.M.mirrored_verticaly == [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
@@ -222,7 +225,7 @@ class MirroringAndRotating(unittest.TestCase):
         assert self.M.mirrored_horizontaly.mirrored_verticaly == [[8, 7, 6], [5, 4, 3], [2, 1, 0]]
 
     def test_clockwise_rotation(self):
-        assert self.M.rotated_clockwise == [[6, 3, 0], [7, 4, 1], [8, 5, 2]]
+        assert self.M.rotated_clockwise == [[6, 3, 0], [7, 4, 1], [8, 5, 2]], self.M.rotated_clockwise
         assert self.M.rotated_clockwise.rotated_clockwise.rotated_clockwise.rotated_clockwise == self.M
 
     def test_counterclockwise_rotation(self):
