@@ -27,16 +27,21 @@ class Equal(unittest.TestCase):
         assert self.one2 == [[1, 0], [0, 1]]
         assert self.zero3 != self.zero2
         assert self.one3 != self.one2
+        assert self.zero3.main_diagonal == [0, 0, 0]
+        assert self.one2.main_diagonal == [1, 1]
 
     def test_contains(self):
         zero2x3 = [[0, 0], [0, 0], [0, 0]]
         one2x3 = [[1, 0], [0, 1], [0, 0]]
+        one3x3_s = [[2, 0, 0], [0, 1, 0], [0, 0, 1]]
         assert self.zero2 in self.zero3
         assert self.one2 in self.one3
+        assert self.one2 in Matrix.from_nested_list(one3x3_s)
         assert zero2x3 in self.zero3
         assert self.zero2 in Matrix.from_nested_list(zero2x3)
         assert one2x3 in self.one3
         assert self.one2 in Matrix.from_nested_list(one2x3)
+        assert self.zero3 not in zero2x3
 
 
 class PreDefined(unittest.TestCase):
@@ -84,6 +89,17 @@ class Generation(unittest.TestCase):
         assert m == [[0, 1, 2], [1, 2, 3], [2, 3, 4]]
         m = Matrix.from_joined_lists(3, values=range(9))
         assert m == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+
+    def test_errors(self):
+        self.assertRaises(ValueError, lambda: Matrix.from_lists())
+        self.assertRaises(ValueError, lambda: Matrix.from_lists([]))
+        self.assertRaises(ValueError, lambda: Matrix.from_joined_lists(3, values=[1,2,3,4,5]))
+        self.assertRaises(ValueError, lambda: Matrix.from_joined_lists(3, 3, values=[1, 2, 3, 4, 5, 6]))
+        self.assertRaises(ValueError, lambda: Matrix.from_nested_list([]))
+        self.assertRaises(ValueError, lambda: Matrix.from_nested_list('test'))  # noqa
+        self.assertRaises(ValueError, lambda: Matrix.from_nested_list([[],[],[]]))
+        self.assertRaises(ValueError, lambda: Matrix.from_nested_list([[1,2],[3,4],[5,6,7],[8,9]]))
+        self.assertRaises(ValueError, lambda: Matrix.generate(3, 3, lambda x,y,z: x+y+z))
 
 
 class Indexing(unittest.TestCase):
@@ -164,7 +180,11 @@ class Math(unittest.TestCase):
         assert self.E == [[3, 0, 0], [0, 3, 0], [0, 0, 3]]
         self.E /= 3
         assert self.E == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        pass
+        self.assertRaises(AttributeError, lambda: self.C * 'str')
+        def test1(): self.C *= 'str'
+        def test2(): self.C /= 'str'
+        self.assertRaises(AttributeError, test1)
+        self.assertRaises(AttributeError, test2)
 
     def test_add_matrix(self):
         assert self.G + self.F == self.H
@@ -173,33 +193,43 @@ class Math(unittest.TestCase):
 
         self.G += self.F
         assert self.G == self.H
-        pass
+        self.assertRaises(AttributeError, lambda: self.C + self.D)
 
     def test_sub_matrix(self):
         assert self.D - self.D == Matrix.zero_matrix(self.D.width)
 
         self.E -= self.E
         assert self.E == Matrix.zero_matrix(self.E.width)
-        pass
+        self.assertRaises(AttributeError, lambda: self.C - self.D)
 
     def test_mul_matrix(self):
-        assert Matrix(1, 2, [[1,2]]) * Matrix(2, 1, [[1], [2]]) == [[5]]
+        m = Matrix(1, 2, [[1,2]])
+        m2 = Matrix(2, 1, [[1], [2]])
+        assert m * m2 == [[5]]
+        assert m == [[1,2]]
+        m *= m2
+        assert m == [[5]]
         assert Matrix.from_nested_list([[1,2,3],[3,4,2],[3,2,1]]) * Matrix.from_nested_list([[1,1,1],[3,4,2],[3,2,1]])\
                == Matrix.from_nested_list([[16,15,8],[21,23,13],[12,13,8]])
         assert Matrix.from_lists([2,0],[1,9]) * Matrix.from_lists([3,9],[4,7]) == Matrix.from_lists([6,18],[39,72])
+        # FIXME:  assert self.C * self.E == self.C
+        self.assertRaises(AttributeError, lambda: self.E * self.F)
 
     def test_inverse_matrix(self):
         # A * ~A == 1
         assert ~self.D == [[-2, 1], [1.5, -0.5]]
+        self.assertRaises(NotImplementedError, lambda: ~self.A)
         #assert self.D * ~self.D == Matrix.identity(self.D.width)
         #assert self.A * ~self.A == Matrix.identity(self.A.width)
         #assert ~self.A * self.A == Matrix.identity(self.A.height)
 
     def test_trace(self):
         assert self.D.trace == 5
+        self.assertRaises(NotSquareMatrix, lambda: self.C.trace)
 
     def test_determinant(self):
         assert self.D.determinant == -2
+        # TODO: n=3,4,5
 
     def test_transpose(self):
         self.B.transpose()
@@ -243,6 +273,16 @@ class LogicWithBitMatrix(unittest.TestCase):
     def setUp(self) -> None:
         self.A = Matrix(2, 2, [[True, True], [False, False]])
         self.B = Matrix(2, 2, [[True, False], [True, False]])
+        self.C = Matrix(1, 1, [[True]])
+        self.D = Matrix.zero_matrix(3, boolean_matrix=True)
+        # self.D1 = Matrix.zero_matrix(3)
+        self.E = Matrix.identity(3, boolean_matrix=True)
+        # self.E1 = Matrix.identity(3)
+
+    def test_boolean_generator(self):
+        assert self.D == False
+        assert all(self.E.main_diagonal)
+        assert self.E == [[True,False,False],[False,True,False],[False,False,True]]
 
     def test_compare_to_bool(self):
         # Matrix.identity(3) == True == error
@@ -254,25 +294,37 @@ class LogicWithBitMatrix(unittest.TestCase):
         assert Matrix.from_nested_list([[False, False], [False, False]]) == False
         assert Matrix.from_nested_list([[True, True], [True, True]]) != False
         assert Matrix.from_nested_list([[False, False], [False, False]]) != True
+        assert self.C == True
+        assert self.C != False
 
     def test_and(self):
         assert self.A & self.A == self.A
         assert self.A & self.B == self.B & self.A
         assert self.A & self.B == [[True, False], [False, False]]
+        self.assertRaises(AttributeError, lambda: self.A & self.C)
+        self.assertRaises(AttributeError, lambda: self.A & 123)
 
     def test_or(self):
         assert self.A | self.A == self.A
         assert self.A | self.B == self.B | self.A
         assert self.A | self.B == [[True, True], [True, False]]
+        self.assertRaises(AttributeError, lambda: self.A | self.C)
+        self.assertRaises(AttributeError, lambda: self.A | 123)
 
     def test_not(self):
         assert not self.A == [[False, False], [True, True]]
         assert not self.B == [[False, True], [False, True]]
+        assert -self.A == [[False, False], [True, True]]
+        assert -self.B == [[False, True], [False, True]]
 
     def test_minus(self):
         assert self.A - self.B == [[False, True], [False, False]]
         assert self.B - self.A == [[False, False], [True, False]]
+        self.assertRaises(AttributeError, lambda: self.A - self.C)
+        self.assertRaises(AttributeError, lambda: self.A - 123)
 
     def test_xor(self):
         assert self.A ^ self.B == self.B ^ self.A == [[False, True], [True, False]]
         assert (self.A | self.B) - (self.A & self.B) == self.A ^ self.B
+        self.assertRaises(AttributeError, lambda: self.A ^ self.C)
+        self.assertRaises(AttributeError, lambda: self.A ^ 123)

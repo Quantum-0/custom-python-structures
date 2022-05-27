@@ -115,10 +115,14 @@ class Matrix(Generic[_MVT]):
 
     @classmethod
     def from_nested_list(cls, values: List[List[_MVT]]):
+        if not isinstance(values, list):
+            raise ValueError()
         h = len(values)
         if h == 0:
             raise ValueError('Cannot create matrix from empty list')
         w = len(values[0])
+        if w == 0:
+            raise ValueError('Cannot create matrix with width = 0')
         if not all(len(row) == w for row in values):
             raise ValueError('All rows must have equal length')
         return Matrix(w, h, values, check_sizes=False)
@@ -139,11 +143,15 @@ class Matrix(Generic[_MVT]):
         return cls.from_nested_list(values=list(lists))
 
     @classmethod
-    def zero_matrix(cls, size) -> Matrix[_MVT]:
+    def zero_matrix(cls, size, *, boolean_matrix: bool = False) -> Matrix[_MVT]:
+        if boolean_matrix:
+            return cls.generate(width=size, height=size, value=False)
         return cls.generate(width=size, height=size, value=0)
 
     @classmethod
-    def identity(cls, size) -> Matrix[_MVT]:
+    def identity(cls, size, *, boolean_matrix: bool = False) -> Matrix[_MVT]:
+        if boolean_matrix:
+            return cls.generate(width=size, height=size, value=lambda x, y: x==y)
         return cls.generate(width=size, height=size, value=lambda x, y: 1 if x == y else 0)
 
     @classmethod
@@ -182,8 +190,8 @@ class Matrix(Generic[_MVT]):
 
     @property
     def determinant(self) -> float:
-        if not self.is_square:
-            raise NotSquareMatrix()
+        # if not self.is_square:
+        #     raise NotSquareMatrix()
         m = [row[:] for row in self._values]
         for fd in range(self.width):
             for i in range(fd+1, self.width):
@@ -212,11 +220,11 @@ class Matrix(Generic[_MVT]):
         offsets_x = range(self.width - other.width + 1)
         offsets_y = range(self.height - other.height + 1)
         for offset_y in offsets_y:
-            for offsets_x in offsets_x:
+            for offset_x in offsets_x:
                 eq = True
                 for y in range(other.height):
                     for x in range(other.width):
-                        if self._values[y][x] != other._values[y][x]:
+                        if self._values[y+offset_y][x+offset_x] != other._values[y][x]:
                             eq = False
                             break
                     if not eq:
@@ -228,14 +236,14 @@ class Matrix(Generic[_MVT]):
     def __invert__(self):
         """ Overrides operator ~A """
         # raise NotImplementedError()
-        if not self.is_square:
-            raise NotSquareMatrix()
+        # if not self.is_square:
+        #     raise NotSquareMatrix()
         d = self.determinant
         if self.width == 2:
             return Matrix.from_nested_list([[self._values[1][1] / d, -1 * self._values[0][1] / d],
                     [-1 * self._values[1][0] / d, self._values[0][0] / d]])
         else:
-            NotImplementedError('Inverse matrix for > 2x2 is not supported yet')
+            raise NotImplementedError('Inverse matrix for > 2x2 is not supported yet')
 
     def __add__(self, other: Matrix) -> Matrix[_MVT]:
         if not isinstance(other, Matrix):
@@ -263,7 +271,7 @@ class Matrix(Generic[_MVT]):
 
     def __itruediv__(self, other: Union[int, float]) -> Matrix[_MVT]:
         if not isinstance(other, numbers.Number):
-            raise ValueError()
+            raise AttributeError()
 
         for i in range(self.width):
             for j in range(self.height):
@@ -273,7 +281,21 @@ class Matrix(Generic[_MVT]):
 
     def __imul__(self, other: Union[Matrix, int, float]) -> Matrix[_MVT]:
         if isinstance(other, Matrix):
-            raise NotImplementedError()
+            c = []
+            for i in range(0, self.width):
+                temp = []
+                for j in range(0, other.height):
+                    s = 0
+                    for k in range(0, self.height):
+                        s += self._values[i][k] * other._values[k][j]
+                    temp.append(s)
+                c.append(temp)
+            self._values = c
+            self._height = other.height
+            return self
+
+        if not isinstance(other, numbers.Number):
+            raise AttributeError()
 
         for i in range(self.width):
             for j in range(self.height):
@@ -282,11 +304,14 @@ class Matrix(Generic[_MVT]):
         return self
 
     def __mul__(self, other: Union[Matrix, _MVT]) -> Matrix[_MVT]:
-        if not isinstance(other, Matrix):
+        if isinstance(other, numbers.Number):
             return Matrix.from_nested_list([[elem * other for elem in row] for row in self._values])
 
+        if not isinstance(other, Matrix):
+            raise AttributeError()
+
         if self.width != other.height:
-            raise ValueError('Incorrect matrix size for multiplication')
+            raise AttributeError('Incorrect matrix size for multiplication')
 
         c = []
         for i in range(0, self.width):
