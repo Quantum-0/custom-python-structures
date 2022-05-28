@@ -33,21 +33,16 @@ class Matrix(Generic[_MVT]):
         if not isinstance(index[0], (int, slice)) or not isinstance(index[1], (int, slice)):
             raise IndexError("Index must be tuple of int/slice values")
         # Bounds
-        if (isinstance(index[0], int) and (index[0] < 0 or index[0] >= self._width)) or (
-            isinstance(index[1], int) and (index[1] < 0 or index[1] >= self._height)
-        ):
-            # (isinstance(index[0], slice) and (index[0] and)):
+        if isinstance(index[0], int) and (index[0] < 0 or index[0] >= self._width):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
-        # if (isinstance(index[0], slice) and index[0].step != None) or (isinstance(index[1], slice) and index[1].step != None):
-        #     raise IndexError("Matrix doesn't support slice step")
+        if isinstance(index[1], int) and (index[1] < 0 or index[1] >= self._height):
+            raise IndexError("Matrix doesn't support negative or overflow indexes")
 
-        # Y is int
         if isinstance(index[1], int):
-            return (
-                self._values[index[1]][index[0]][:] if isinstance(index[0], slice) else self._values[index[1]][index[0]]
-            )
-        else:
-            return [row[index[0]] for row in self._values[index[1]]]
+            if isinstance(index[0], slice):
+                return self._values[index[1]][index[0]][:]
+            return self._values[index[1]][index[0]]
+        return [row[index[0]] for row in self._values[index[1]]]
 
     def __setitem__(
         self,
@@ -61,13 +56,10 @@ class Matrix(Generic[_MVT]):
             raise IndexError("Index must be tuple of two values")
         if not isinstance(key[0], (int, slice)) or not isinstance(key[1], (int, slice)):
             raise IndexError("Index must be tuple of int/slice values")
-        if not isinstance(value, self._inner_type):
-            raise ValueError(f"Value must be type {self._inner_type}")
         # Bounds
-        if (isinstance(key[0], int) and (key[0] < 0 or key[0] >= self._width)) or (
-            isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height)
-        ):
-            # (isinstance(index[0], slice) and (index[0] and)):
+        if isinstance(key[0], int) and (key[0] < 0 or key[0] >= self._width):
+            raise IndexError("Matrix doesn't support negative or overflow indexes")
+        if isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
 
         if isinstance(key[0], int) and isinstance(key[1], int):
@@ -78,9 +70,9 @@ class Matrix(Generic[_MVT]):
         other = Matrix.from_nested_list(item) if isinstance(item, List) else item
         if other.width > self.width or other.height > self.height:
             return False
-        for y in range(self.height - other.height + 1):
-            for x in range(self.width - other.width + 1):
-                if self[x : x + other.width, y : y + other.height] == other:
+        for j in range(self.height - other.height + 1):
+            for i in range(self.width - other.width + 1):
+                if self[i : i + other.width, j : j + other.height] == other:
                     return True
         return False
 
@@ -117,13 +109,13 @@ class Matrix(Generic[_MVT]):
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix[_MVT]:
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
-        values = list()
-        for y in range(height):
-            row = list()
-            for x in range(width):
+        values = []
+        for j in range(height):
+            row = []
+            for i in range(width):
                 if callable(value):
                     if value.__code__.co_argcount == 2:  # noqa
-                        row.append(value(x, y))
+                        row.append(value(i, j))
                     elif value.__code__.co_argcount == 0:  # noqa
                         row.append(value())
                     else:
@@ -139,19 +131,19 @@ class Matrix(Generic[_MVT]):
     def from_nested_list(cls, values: List[List[_MVT]]):
         if not isinstance(values, list):
             raise ValueError()
-        h = len(values)
-        if h == 0:
+        height = len(values)
+        if height == 0:
             raise ValueError("Cannot create matrix from empty list")
-        w = len(values[0])
-        if w == 0:
+        width = len(values[0])
+        if width == 0:
             raise ValueError("Cannot create matrix with width = 0")
-        if not all(len(row) == w for row in values):
+        if not all(len(row) == width for row in values):
             raise ValueError("All rows must have equal length")
-        return Matrix(w, h, values)
+        return Matrix(width, height, values)
 
     @classmethod
     def from_joined_lists(cls, width: int, height: int = None, *, values: List[_MVT] or range) -> Matrix[_MVT]:
-        lists = list()
+        lists = []
         if isinstance(values, range):
             values = list(values)
         for i in range(0, len(values), width):
@@ -166,15 +158,9 @@ class Matrix(Generic[_MVT]):
 
     @classmethod
     def zero_matrix(cls, size: Union[int, Tuple[int, int]], *, boolean_matrix: bool = False) -> Matrix[_MVT]:
-        if boolean_matrix:
-            if isinstance(size, int):
-                return cls.generate(width=size, height=size, value=False)
-            else:
-                return cls.generate(width=size[0], height=size[1], value=False)
         if isinstance(size, int):
-            return cls.generate(width=size, height=size, value=0)
-        else:
-            return cls.generate(width=size[0], height=size[1], value=0)
+            return cls.generate(width=size, height=size, value=False if boolean_matrix else 0)
+        return cls.generate(width=size[0], height=size[1], value=False if boolean_matrix else 0)
 
     @classmethod
     def identity(cls, size: int, *, boolean_matrix: bool = False) -> Matrix[_MVT]:
@@ -242,17 +228,17 @@ class Matrix(Generic[_MVT]):
     def determinant(self) -> float:
         # if not self.is_square:
         #     raise NotSquareMatrix()
-        m = [row[:] for row in self._values]
+        matrix = [row[:] for row in self._values]
         for fd in range(self.width):
             for i in range(fd + 1, self.width):
-                if m[fd][fd] == 0:
-                    m[fd][fd] = 1.0e-18
-                s = m[i][fd] / m[fd][fd]
+                if matrix[fd][fd] == 0:
+                    matrix[fd][fd] = 1.0e-18
+                s = matrix[i][fd] / matrix[fd][fd]
                 for j in range(self.width):
-                    m[i][j] = m[i][j] - s * m[fd][j]
+                    matrix[i][j] = matrix[i][j] - s * matrix[fd][j]
         p = 1.0
         for i in range(self.width):
-            p *= m[i][i]
+            p *= matrix[i][i]
         return round(p, 10)
         # if self.width == 2:
         #     return self._values[0][0] * self._values[1][1] - self._values[0][1] * self._values[1][0]
@@ -269,12 +255,12 @@ class Matrix(Generic[_MVT]):
         # raise NotImplementedError()
         # if not self.is_square:
         #     raise NotSquareMatrix()
-        d = self.determinant
+        det = self.determinant
         if self.width == 2:
             return Matrix.from_nested_list(
                 [
-                    [self._values[1][1] / d, -1 * self._values[0][1] / d],
-                    [-1 * self._values[1][0] / d, self._values[0][0] / d],
+                    [self._values[1][1] / det, -1 * self._values[0][1] / det],
+                    [-1 * self._values[1][0] / det, self._values[0][0] / det],
                 ]
             )
         else:
@@ -347,16 +333,13 @@ class Matrix(Generic[_MVT]):
 
     def __imul__(self, other: Union[Matrix, int, float]) -> Matrix[_MVT]:
         if isinstance(other, Matrix):
-            c = []
+            new_values = []
             for i in range(0, self.width):
-                temp = []
+                row = []
                 for j in range(0, other.height):
-                    s = 0
-                    for k in range(0, self.height):
-                        s += self._values[i][k] * other._values[k][j]
-                    temp.append(s)
-                c.append(temp)
-            self._values = c
+                    row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
+                new_values.append(row)
+            self._values = new_values
             self._height = other.height
             return self
 
