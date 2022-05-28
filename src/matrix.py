@@ -25,7 +25,7 @@ class Matrix(Generic[_MVT], Iterable):
     def __getitem__(
         self,
         index: _MKT,
-    ) -> _MVT:
+    ) -> Union[List[_MVT], List[List[_MVT]], _MVT]:
         # Type Check
         if not isinstance(index, tuple):
             raise IndexError("Index must be tuple")
@@ -67,7 +67,7 @@ class Matrix(Generic[_MVT], Iterable):
             self._values[key[1]][key[0]] = value
         raise NotImplementedError()
 
-    def __contains__(self, item: Matrix[_MVT] or List[List[_MVT]]) -> bool:
+    def __contains__(self, item: Union[Matrix[_MVT], List[List[_MVT]]]) -> bool:
         other = Matrix.from_nested_list(item) if isinstance(item, List) else item
         if other.width > self.width or other.height > self.height:
             return False
@@ -81,7 +81,7 @@ class Matrix(Generic[_MVT], Iterable):
         return self.get_iterator(self.Walkthrow.DEFAULT)
 
     def get_iterator(self, walkthrow: Walkthrow) -> MatrixIterator[_MVT]:
-        iter_type = MatrixIterator.get_iterator_type(walkthrow_type=walkthrow)
+        iter_type: Type[MatrixIterator[_MVT]] = MatrixIterator.get_iterator_type(walkthrow_type=walkthrow)
         return iter_type(self)
 
     @property
@@ -126,9 +126,9 @@ class Matrix(Generic[_MVT], Iterable):
             for i in range(width):
                 if callable(value):
                     if value.__code__.co_argcount == 2:  # noqa
-                        row.append(value(i, j))
+                        row.append(value(i, j))  # type: ignore
                     elif value.__code__.co_argcount == 0:  # noqa
-                        row.append(value())
+                        row.append(value())  # type: ignore
                     else:
                         raise ValueError("Incorrect number of arguments for generator")
                 elif isinstance(value, Iterator):
