@@ -394,3 +394,28 @@ class LogicWithBitMatrix(unittest.TestCase):
         self.assertRaises(AttributeError, test2)
         self.assertRaises(AttributeError, test3)
         self.assertRaises(AttributeError, test4)
+
+class Iterators(unittest.TestCase):
+    def setUp(self) -> None:
+        self.m = Matrix.from_joined_lists(3, values=range(9))
+
+    def test_default_iterator(self):
+        for index, item in enumerate(self.m):
+            assert index == item
+
+    def test_reversed_iterator(self):
+        for index, item in enumerate(self.m.get_iterator(Matrix.Walkthrow.REVERSED)):
+            assert index == 8-item
+
+    def test_snake_iterator(self):
+        assert list(self.m.get_iterator(Matrix.Walkthrow.SNAKE)) == [0, 1, 2, 5, 4, 3, 6, 7, 8], list(self.m.get_iterator(Matrix.Walkthrow.SNAKE))
+
+    @unittest.skip('Not Implemented')
+    def test_spiral_iterator(self):
+        assert list(self.m.get_iterator(Matrix.Walkthrow.SPIRAL)) == [0, 1, 2, 5, 8, 7, 6, 3, 4]
+
+    def test_rows_iterator(self):
+        assert list(self.m.get_iterator(Matrix.Walkthrow.ROWS)) == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+
+    def test_columns_iterator(self):
+        assert list(self.m.get_iterator(Matrix.Walkthrow.COLUMNS)) == [[0, 3, 6], [1, 4, 7], [2, 5, 8]]

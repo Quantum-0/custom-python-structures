@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import numbers
-from collections.abc import Callable, Iterator
+from abc import ABC
+from collections.abc import Callable, Iterator, Iterable
 from enum import Enum, unique, auto, IntEnum
-from typing import Tuple, Union, List, Generic, TypeVar, Optional, Any
+from typing import Tuple, Union, List, Generic, TypeVar, Optional, Type
 
 # Matrix Value Type & Matrix Key Type
 _MVT = TypeVar("_MVT")  # Union[int, float, complex] # + maybe bool
@@ -14,7 +15,7 @@ class NotSquareMatrix(ValueError):
     pass
 
 
-class Matrix(Generic[_MVT]):
+class Matrix(Generic[_MVT], Iterable):
     # ======== Class logic ========
     def __init__(self, width: int, height: int, values: List[List[_MVT]]):
         self._width: int = width
@@ -36,7 +37,7 @@ class Matrix(Generic[_MVT]):
         if isinstance(index[0], int) and (index[0] < 0 or index[0] >= self._width):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
         if isinstance(index[1], int) and (index[1] < 0 or index[1] >= self._height):
-            raise IndexError("Matrix doesn't support negative or overflow indexes")
+            raise IndexError(f"Matrix doesn't support negative or overflow indexes: {index}")
 
         if isinstance(index[1], int):
             if isinstance(index[0], slice):
@@ -76,6 +77,14 @@ class Matrix(Generic[_MVT]):
                     return True
         return False
 
+    def __iter__(self) -> MatrixIterator[_MVT]:
+        return self.get_iterator(self.Walkthrow.DEFAULT)
+
+    def get_iterator(self, walkthrow: Walkthrow) -> MatrixIterator[_MVT]:
+        iter_type = MatrixIterator.get_iterator_type(walkthrow_type=walkthrow)
+        return iter_type(self)
+
+
     @property
     def width(self) -> int:
         return self._width
@@ -94,8 +103,11 @@ class Matrix(Generic[_MVT]):
     # TODO:
     class Walkthrow(Enum):
         DEFAULT = 0
-        SNAKE = 1
-        SPIRAL = 2
+        REVERSED = 1
+        SNAKE = 2
+        SPIRAL = 3
+        COLUMNS = 4
+        ROWS = 5
 
     # ======== Factories ========
 
@@ -362,16 +374,13 @@ class Matrix(Generic[_MVT]):
         if self.width != other.height:
             raise AttributeError("Incorrect matrix size for multiplication")
 
-        c = []
+        new_values = []
         for i in range(0, self.width):
-            temp = []
+            row = []
             for j in range(0, other.height):
-                s = 0
-                for k in range(0, self.height):
-                    s += self._values[i][k] * other._values[k][j]
-                temp.append(s)
-            c.append(temp)
-        return Matrix(self.width, other.width, c)
+                row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
+            new_values.append(row)
+        return Matrix(self.width, other.width, new_values)
 
     def __eq__(self, other: List[List[_MVT]] or Matrix[_MVT] or bool) -> bool:
         if isinstance(other, Matrix):
@@ -447,3 +456,96 @@ class Matrix(Generic[_MVT]):
             ]
             for j in range(self.height)
         ]
+
+
+class MatrixIterator(Iterator[_MVT], ABC):
+    _WALKTHROW_TYPE = None
+
+    def __init__(self, matrix: Matrix):
+        self._ptr = 0
+        self._matrix = matrix
+        self._len = self._matrix.width * self._matrix.height
+
+    def __iter__(self) -> MatrixIterator:
+        return self
+
+    def __next__(self) -> None:
+        self._ptr += 1
+        if self._ptr > (self._matrix.width * self._matrix.height):
+            raise StopIteration()
+
+    @classmethod
+    def get_iterator_type(cls, walkthrow_type: Matrix.Walkthrow) -> Type[MatrixIterator[_MVT]]:
+        found = [iterator for iterator in cls.__subclasses__() if iterator._WALKTHROW_TYPE == walkthrow_type]
+        assert len(found) < 2, f"Duplicate implementation for iterator {walkthrow_type}: {found}"
+        assert len(found) == 1, f"Cannot find implementation for iterator {walkthrow_type}"
+        return found[0]
+
+
+class DefaultMatrixIterator(MatrixIterator):
+    _WALKTHROW_TYPE = Matrix.Walkthrow.DEFAULT
+
+    def __next__(self) -> _MVT:
+        if self._ptr < self._len:
+            value = self._matrix[self._ptr % self._matrix.width, self._ptr // self._matrix.width]
+        super().__next__()
+        return value
+
+
+class ResersedMatrixIterator(MatrixIterator):
+    _WALKTHROW_TYPE = Matrix.Walkthrow.REVERSED
+
+    def __init__(self, matrix: Matrix):
+        super().__init__(matrix)
+
+    def __next__(self) -> _MVT:
+        if self._ptr < self._len:
+            value = self._matrix[(self._len - 1 - self._ptr) % self._matrix.width, (self._len - 1 - self._ptr) // self._matrix.width]
+            self._ptr += 1
+            return value
+        raise StopIteration
+
+
+class SnakeMatrixIterator(MatrixIterator):
+    _WALKTHROW_TYPE = Matrix.Walkthrow.SNAKE
+
+    def __init__(self, matrix: Matrix):
+        super().__init__(matrix)
+
+    def __next__(self) -> _MVT:
+        if self._ptr < self._len:
+            j = self._ptr // self._matrix.width
+            i = (self._len - 1 - self._ptr) % self._matrix.width if j % 2 == 1 else self._ptr % self._matrix.width
+            value = self._matrix[i, j]
+            self._ptr += 1
+            return value
+        raise StopIteration
+
+
+class SpiralMatrixIterator(MatrixIterator):
+    _WALKTHROW_TYPE = Matrix.Walkthrow.SPIRAL
+
+    def __next__(self) -> _MVT:
+        raise NotImplementedError
+
+
+class RowMatrixIterator(MatrixIterator):
+    _WALKTHROW_TYPE = Matrix.Walkthrow.ROWS
+
+    def __next__(self) -> List[_MVT]:
+        if self._ptr >= self._matrix.height:
+            raise StopIteration
+        value = self._matrix[:, self._ptr]
+        self._ptr += 1
+        return value
+
+
+class ColumnMatrixIterator(MatrixIterator):
+    _WALKTHROW_TYPE = Matrix.Walkthrow.COLUMNS
+
+    def __next__(self) -> List[_MVT]:
+        if self._ptr == self._matrix.width:
+            raise StopIteration
+        value = self._matrix[self._ptr, :]
+        self._ptr += 1
+        return value
