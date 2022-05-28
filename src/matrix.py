@@ -84,7 +84,6 @@ class Matrix(Generic[_MVT], Iterable):
         iter_type = MatrixIterator.get_iterator_type(walkthrow_type=walkthrow)
         return iter_type(self)
 
-
     @property
     def width(self) -> int:
         return self._width
@@ -500,7 +499,9 @@ class ResersedMatrixIterator(MatrixIterator):
 
     def __next__(self) -> _MVT:
         if self._ptr < self._len:
-            value = self._matrix[(self._len - 1 - self._ptr) % self._matrix.width, (self._len - 1 - self._ptr) // self._matrix.width]
+            value = self._matrix[
+                (self._len - 1 - self._ptr) % self._matrix.width, (self._len - 1 - self._ptr) // self._matrix.width
+            ]
             self._ptr += 1
             return value
         raise StopIteration
