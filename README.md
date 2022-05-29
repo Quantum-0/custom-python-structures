@@ -48,12 +48,18 @@ return ring[0]
 ```
 
 ## Matrix
+
+That structure implements matrix interface on nested list.
+
+### UML
 ```mermaid
 classDiagram
         Matrix <|-- NumericMatrix
         Matrix <|-- BitMatrix
         class Matrix{
-            -_values [[T]]
+            -_values : [[T]]
+            -_width : int
+            -_height : int
             +width int
             +height int
             +size tuple
@@ -98,4 +104,48 @@ classDiagram
         MatrixIterator: +__init__(Matrix)
         MatrixIterator: +__iter__()
         MatrixIterator: +__next__()
+```
+
+### Usage
+
+```python
+# Creating examples
+m1 = NumericMatrix.from_joined_lists(3, values=range(9))
+m2 = Matrix(2, 2, [['A', 'B'], ['C', 'D']])
+m3 = Matrix.zero_matrix(size=4)
+m4 = BitMatrix.from_lists([True, False], [False, True])
+
+# Comparing
+assert m1 != m2 # Supports compating between matrix
+assert m2 == [['A', 'B'], ['C', 'D']] # And directly with nested list
+
+# Math
+# A, B : NumericMatrix
+assert A + B == B + A == C
+assert A += B
+assert A == C
+# Same with subtraction
+# Multiplication implements matrix multiplication, so:
+assert A * B != B * A
+# Trace and Determinant:
+A.trace
+A.determinant
+
+# Transformations
+A.transponate()
+assert A.rotated_clockwise.rotated_counterclockwise == A
+assert A.mirrored_horizontaly.mirrored_horizontaly == A
+
+# Bit operations - implements bit logic between elements
+# A, B : BitMatrix
+assert A & B == B & A
+assert A | B == B | A
+assert A ^ B == B ^ A
+assert -(-A) == A
+
+# Indexing and slicing
+A[0,0]
+A[1,:]
+A[:,2]
+A[4:7,2:4]
 ```
