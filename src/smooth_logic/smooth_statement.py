@@ -6,11 +6,36 @@ class InvalidChanceValue(ValueError):
     pass
 
 
+class _UnknownChance:
+    def __bool__(self):
+        return False
+
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, _):
+        return self
+
+    def __repr__(self):
+        return f"<{Chance.__name__}(Unknown)>"
+
+    @property
+    def chance(self) -> None:
+        return None
+
+    @property
+    def percent(self) -> None:
+        return None
+
+
+# Singleton value indicates that value of chance is unknown
+unknown_chance = _UnknownChance()
+
+
 # TODO: Dependency chances (tree probably, dunno)
 # TODO: fraction (for a more accurate comparison)
 # TODO: Unknown Chance
-# TODO: Rename to "Chance"
-class SmoothStatement:
+class Chance:
     def __init__(self, chance: Union[float, int, bool, str], *, weight: float = 1):
         if isinstance(chance, (float, int)):
             if not 0 <= chance <= 1:
@@ -42,46 +67,46 @@ class SmoothStatement:
     def __bool__(self) -> Optional[bool]:
         return True if self._chance == 1 else False if self._chance == 0 else None
 
-    def __and__(self, other: object) -> SmoothStatement:
+    def __and__(self, other: object) -> Chance:
         if isinstance(other, bool):
-            return SmoothStatement(self._chance if other else 0, weight=self._weight + 1)
-        elif isinstance(other, SmoothStatement):
+            return Chance(self._chance if other else 0, weight=self._weight + 1)
+        elif isinstance(other, Chance):
             if other is self:
                 return self
             new_chance = round(self._chance * other.chance, 10)
-            return SmoothStatement(new_chance, weight=self._weight + other._weight)  # TODO: weights
+            return Chance(new_chance, weight=self._weight + other._weight)  # TODO: weights
         else:
             raise AttributeError
 
-    def __or__(self, other: object) -> SmoothStatement:
+    def __or__(self, other: object) -> Chance:
         if isinstance(other, bool):
-            return SmoothStatement(1 if other else self._chance, weight=self._weight + 1)
-        elif isinstance(other, SmoothStatement):
+            return Chance(1 if other else self._chance, weight=self._weight + 1)
+        elif isinstance(other, Chance):
             if other is self:
                 return self
             new_chance = round(1 - (1 - self._chance) * (1 - other.chance), 10)
-            return SmoothStatement(new_chance, weight=self._weight + other._weight)  # TODO: weights
+            return Chance(new_chance, weight=self._weight + other._weight)  # TODO: weights
         else:
             raise AttributeError
 
-    def __invert__(self) -> SmoothStatement:
-        return SmoothStatement(1-self._chance, weight=self._weight)
+    def __invert__(self) -> Chance:
+        return Chance(1 - self._chance, weight=self._weight)
 
-    def __xor__(self, other: object) -> SmoothStatement:
+    def __xor__(self, other: object) -> Chance:
         if isinstance(other, bool):
-            return SmoothStatement(1-self._chance if other else self._chance, weight=self._weight + 1)
-        elif isinstance(other, SmoothStatement):
+            return Chance(1 - self._chance if other else self._chance, weight=self._weight + 1)
+        elif isinstance(other, Chance):
             if other is self:
-                return SmoothStatement(0, weight=self._weight*2)
+                return Chance(0, weight=self._weight * 2)
             new_chance = round(self._chance + other._chance - 2 * self._chance * other.chance, 10)
-            return SmoothStatement(new_chance, weight=self._weight + other._weight)  # TODO: weights
+            return Chance(new_chance, weight=self._weight + other._weight)  # TODO: weights
         else:
             raise AttributeError
 
     def __lt__(self, other) -> bool:
         if isinstance(other, bool):
             return self._chance < int(other)
-        elif isinstance(other, SmoothStatement):
+        elif isinstance(other, Chance):
             return self._chance < other.chance
         elif isinstance(other, float):
             return self._chance < other
@@ -91,7 +116,7 @@ class SmoothStatement:
     def __le__(self, other) -> bool:
         if isinstance(other, bool):
             return self._chance <= int(other)
-        elif isinstance(other, SmoothStatement):
+        elif isinstance(other, Chance):
             return self._chance <= other.chance
         elif isinstance(other, float):
             return self._chance <= other
@@ -107,16 +132,16 @@ class SmoothStatement:
     def __eq__(self, other):
         if isinstance(other, bool):
             return self._chance == int(other)
-        elif isinstance(other, SmoothStatement):
+        elif isinstance(other, Chance):
             return round(abs(self._chance - other.chance), 10) == 0
         elif isinstance(other, float):
             return round(abs(self._chance - other), 10) == 0
         else:
             raise AttributeError
 
-    def __mul__(self, other) -> SmoothStatement:
+    def __mul__(self, other) -> Chance:
         if isinstance(other, int):
-            return SmoothStatement(chance=self._chance ** other, weight=self._weight * other)
+            return Chance(chance=self._chance ** other, weight=self._weight * other)
 
     def __repr__(self):
         # TODO: print as fraction
@@ -124,16 +149,16 @@ class SmoothStatement:
 
 
 class Constants:
-    FALSE = SmoothStatement(0)
-    TRUE = SmoothStatement(1)
-    NO = SmoothStatement(0)
-    YES = SmoothStatement(1)
-    NEVER = SmoothStatement(0)
-    ALWAYS = SmoothStatement(1)
-    MAYBE = SmoothStatement(0.5)
-    SOMETIMES = SmoothStatement(0.5)
-    HALF = SmoothStatement(0.5)
-    UNLIKELY = SmoothStatement(0.4)
-    LIKELY = SmoothStatement(0.6)
-    RARELY = SmoothStatement(0.2)
-    OFTEN = SmoothStatement(0.8)
+    FALSE = Chance(0)
+    TRUE = Chance(1)
+    NO = Chance(0)
+    YES = Chance(1)
+    NEVER = Chance(0)
+    ALWAYS = Chance(1)
+    MAYBE = Chance(0.5)
+    SOMETIMES = Chance(0.5)
+    HALF = Chance(0.5)
+    UNLIKELY = Chance(0.4)
+    LIKELY = Chance(0.6)
+    RARELY = Chance(0.2)
+    OFTEN = Chance(0.8)

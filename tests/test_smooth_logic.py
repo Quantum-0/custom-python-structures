@@ -1,14 +1,14 @@
 import unittest
 
-from src.smooth_logic.smooth_statement import SmoothStatement, Constants
+from src.smooth_logic.smooth_statement import Chance, Constants
 
 
 class Tests(unittest.TestCase):
     def setUp(self) -> None:
-        self.today_is_sunny = SmoothStatement("30%")
-        self.tomorrow_will_be_sunny = SmoothStatement("70%")
-        self.dice = SmoothStatement(1/6)
-        self.coin = SmoothStatement(0.5)
+        self.today_is_sunny = Chance("30%")
+        self.tomorrow_will_be_sunny = Chance("70%")
+        self.dice = Chance(1 / 6)
+        self.coin = Chance(0.5)
 
     def test_value(self):
         assert self.today_is_sunny.chance == 0.3
@@ -16,19 +16,19 @@ class Tests(unittest.TestCase):
 
     def test_compare(self):
         assert self.today_is_sunny != self.tomorrow_will_be_sunny
-        assert self.today_is_sunny > SmoothStatement(0)
-        assert self.today_is_sunny < SmoothStatement(1)
-        assert SmoothStatement(0) == Constants.NEVER
-        assert SmoothStatement(1) == Constants.ALWAYS
-        assert SmoothStatement(0) == False
-        assert SmoothStatement(1) == True
-        assert SmoothStatement(1) != False
-        assert SmoothStatement(0) != True
+        assert self.today_is_sunny > Chance(0)
+        assert self.today_is_sunny < Chance(1)
+        assert Chance(0) == Constants.NEVER
+        assert Chance(1) == Constants.ALWAYS
+        assert Chance(0) == False
+        assert Chance(1) == True
+        assert Chance(1) != False
+        assert Chance(0) != True
 
     def test_logical_operations(self):
-        assert self.today_is_sunny & self.tomorrow_will_be_sunny == SmoothStatement(0.21)
-        assert self.today_is_sunny | self.tomorrow_will_be_sunny == SmoothStatement(0.79)
-        assert self.today_is_sunny ^ self.tomorrow_will_be_sunny == SmoothStatement(0.58)
+        assert self.today_is_sunny & self.tomorrow_will_be_sunny == Chance(0.21)
+        assert self.today_is_sunny | self.tomorrow_will_be_sunny == Chance(0.79)
+        assert self.today_is_sunny ^ self.tomorrow_will_be_sunny == Chance(0.58)
 
         assert self.today_is_sunny & self.coin == .15
         assert self.tomorrow_will_be_sunny & self.dice == .7/6
