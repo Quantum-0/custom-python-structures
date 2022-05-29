@@ -70,12 +70,16 @@ class PreDefined(unittest.TestCase):
         assert NumericMatrix.identity(2) == [[1, 0], [0, 1]]
         assert NumericMatrix.identity(3) == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         assert NumericMatrix.identity(4) == [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        assert NumericMatrix.identity(3).is_identity
+        assert not NumericMatrix.identity(3).is_zero
 
     def test_zero_matrix(self):
         assert NumericMatrix.zero_matrix(1) == [[0]]
         assert NumericMatrix.zero_matrix(2) == [[0, 0], [0, 0]]
         assert NumericMatrix.zero_matrix(3) == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         assert NumericMatrix.zero_matrix(4) == [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+        assert not NumericMatrix.zero_matrix(3).is_identity
+        assert NumericMatrix.zero_matrix(3).is_zero
 
 
 class Generation(unittest.TestCase):

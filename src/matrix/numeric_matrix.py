@@ -22,11 +22,11 @@ class NumericMatrix(Matrix[_MVT]):
 
     @property
     def is_zero(self) -> bool:
-        raise NotImplementedError()
+        return all(all(elem == 0 for elem in row) for row in self._values)
 
     @property
     def is_identity(self) -> bool:
-        raise NotImplementedError()
+        return all(all(val == (1 if i == j else 0) for i, val in enumerate(row)) for j, row in enumerate(self._values))
 
     @property
     def trace(self) -> _MVT:
