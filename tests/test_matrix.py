@@ -1,6 +1,9 @@
 import unittest
 
-from src.matrix import Matrix, NotSquareMatrix
+from src.matrix.bit_matrix import BitMatrix
+from src.matrix.matrix import NotSquareMatrix, Matrix
+from src.matrix.matrix_iterator import MatrixIterator
+from src.matrix.numeric_matrix import NumericMatrix
 
 
 class Empty(unittest.TestCase):
@@ -15,22 +18,26 @@ class Empty(unittest.TestCase):
 
 class Representation(unittest.TestCase):
     def setUp(self) -> None:
-        self.matrix = Matrix(2, 2, [[1, 2], [3, 4]])
+        self.matrix1 = Matrix(2, 2, [[1, 2], [3, 4]])
+        self.matrix2 = NumericMatrix(2, 2, [[1, 2], [3, 4]])
+        self.matrix3 = BitMatrix(2, 2, [[True, False], [False, True]])
 
     def test_repr(self):
-        assert str(self.matrix) == "<Matrix([[1, 2], [3, 4]])>"
+        assert str(self.matrix1) == "<Matrix([[1, 2], [3, 4]])>"
+        assert str(self.matrix2) == "<NumericMatrix([[1, 2], [3, 4]])>"
+        assert str(self.matrix3) == "<BitMatrix([[True, False], [False, True]])>"
 
 
 class Equal(unittest.TestCase):
     def setUp(self) -> None:
-        self.zero3 = Matrix.zero_matrix(3)
-        self.one3 = Matrix.identity(3)
-        self.zero2 = Matrix.zero_matrix(2)
-        self.one2 = Matrix.identity(2)
+        self.zero3 = NumericMatrix.zero_matrix(3)
+        self.one3 = NumericMatrix.identity(3)
+        self.zero2 = NumericMatrix.zero_matrix(2)
+        self.one2 = NumericMatrix.identity(2)
 
     def test_eq(self):
         assert self.zero3 != self.one3
-        assert self.zero3 == Matrix.zero_matrix(3)
+        assert self.zero3 == NumericMatrix.zero_matrix(3)
         assert self.zero3 == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         assert self.one2 == [[1, 0], [0, 1]]
         assert self.zero3 != self.zero2
@@ -44,53 +51,53 @@ class Equal(unittest.TestCase):
         one3x3_s = [[2, 0, 0], [0, 1, 0], [0, 0, 1]]
         assert self.zero2 in self.zero3
         assert self.one2 in self.one3
-        assert self.one2 in Matrix.from_nested_list(one3x3_s)
+        assert self.one2 in NumericMatrix.from_nested_list(one3x3_s)
         assert zero2x3 in self.zero3
-        assert self.zero2 in Matrix.from_nested_list(zero2x3)
+        assert self.zero2 in NumericMatrix.from_nested_list(zero2x3)
         assert one2x3 in self.one3
-        assert self.one2 in Matrix.from_nested_list(one2x3)
+        assert self.one2 in NumericMatrix.from_nested_list(one2x3)
         assert self.zero3 not in self.zero2
-        assert Matrix.from_joined_lists(3, values=range(9)) not in Matrix.from_joined_lists(2, values=range(4))
-        assert Matrix.from_joined_lists(2, values=range(4)) not in Matrix.from_joined_lists(3, values=range(9))
+        assert NumericMatrix.from_joined_lists(3, values=range(9)) not in NumericMatrix.from_joined_lists(2, values=range(4))
+        assert NumericMatrix.from_joined_lists(2, values=range(4)) not in NumericMatrix.from_joined_lists(3, values=range(9))
 
 
 class PreDefined(unittest.TestCase):
     def test_identity_matrix(self):
-        assert Matrix.identity(1) == [[1]]
-        assert Matrix.identity(2) == [[1, 0], [0, 1]]
-        assert Matrix.identity(3) == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        assert Matrix.identity(4) == [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        assert NumericMatrix.identity(1) == [[1]]
+        assert NumericMatrix.identity(2) == [[1, 0], [0, 1]]
+        assert NumericMatrix.identity(3) == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        assert NumericMatrix.identity(4) == [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
     def test_zero_matrix(self):
-        assert Matrix.zero_matrix(1) == [[0]]
-        assert Matrix.zero_matrix(2) == [[0, 0], [0, 0]]
-        assert Matrix.zero_matrix(3) == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        assert Matrix.zero_matrix(4) == [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+        assert NumericMatrix.zero_matrix(1) == [[0]]
+        assert NumericMatrix.zero_matrix(2) == [[0, 0], [0, 0]]
+        assert NumericMatrix.zero_matrix(3) == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        assert NumericMatrix.zero_matrix(4) == [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
 
 class Generation(unittest.TestCase):
     def test_identity(self):
-        m1 = Matrix(3, 3, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        m2 = Matrix.from_lists([1, 0, 0], [0, 1, 0], [0, 0, 1])
-        m3 = Matrix.from_nested_list([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        m4 = Matrix.identity(3)
-        m5 = Matrix.generate(3, 3, lambda x, y: 1 if x == y else 0)
-        m6 = Matrix.from_joined_lists(3, values=[1, 0, 0, 0, 1, 0, 0, 0, 1])
-        m7 = Matrix.from_joined_lists(3, 3, values=[1, 0, 0, 0, 1, 0, 0, 0, 1])
+        m1 = NumericMatrix(3, 3, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        m2 = NumericMatrix.from_lists([1, 0, 0], [0, 1, 0], [0, 0, 1])
+        m3 = NumericMatrix.from_nested_list([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        m4 = NumericMatrix.identity(3)
+        m5 = NumericMatrix.generate(3, 3, lambda x, y: 1 if x == y else 0)
+        m6 = NumericMatrix.from_joined_lists(3, values=[1, 0, 0, 0, 1, 0, 0, 0, 1])
+        m7 = NumericMatrix.from_joined_lists(3, 3, values=[1, 0, 0, 0, 1, 0, 0, 0, 1])
         assert m1._values == m2._values == m3._values == m4._values == m5._values == m6._values == m7._values
 
     def test_zero(self):
-        m1 = Matrix.generate(3, 3, 0)
-        m2 = Matrix.zero_matrix(3)
-        m3 = Matrix.generate(3, 3, lambda x, y: 0)
-        m4 = Matrix.generate(3, 3, lambda: 0)
-        m5 = Matrix.from_lists([0, 0, 0], [0, 0, 0], [0, 0, 0])
-        m6 = Matrix.from_nested_list([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        m7 = Matrix(3, 3, [[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        m8 = Matrix.from_joined_lists(3, values=[0] * 9)
-        m9 = Matrix.from_joined_lists(3, 3, values=[0] * 9)
-        m10 = Matrix.generate(3, 3, 0)
-        m11 = Matrix.zero_matrix(size=(3, 3))
+        m1 = NumericMatrix.generate(3, 3, 0)
+        m2 = NumericMatrix.zero_matrix(3)
+        m3 = NumericMatrix.generate(3, 3, lambda x, y: 0)
+        m4 = NumericMatrix.generate(3, 3, lambda: 0)
+        m5 = NumericMatrix.from_lists([0, 0, 0], [0, 0, 0], [0, 0, 0])
+        m6 = NumericMatrix.from_nested_list([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+        m7 = NumericMatrix(3, 3, [[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+        m8 = NumericMatrix.from_joined_lists(3, values=[0] * 9)
+        m9 = NumericMatrix.from_joined_lists(3, 3, values=[0] * 9)
+        m10 = NumericMatrix.generate(3, 3, 0)
+        m11 = NumericMatrix.zero_matrix(size=(3, 3))
         assert (
             m1._values
             == m2._values
@@ -106,28 +113,28 @@ class Generation(unittest.TestCase):
         )
 
     def test_generation_lambda(self):
-        m = Matrix.generate(3, 3, range(9).__iter__())
+        m = NumericMatrix.generate(3, 3, range(9).__iter__())
         assert m == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
-        m = Matrix.generate(3, 3, lambda x, y: x + y)
+        m = NumericMatrix.generate(3, 3, lambda x, y: x + y)
         assert m == [[0, 1, 2], [1, 2, 3], [2, 3, 4]]
-        m = Matrix.from_joined_lists(3, values=range(9))
+        m = NumericMatrix.from_joined_lists(3, values=range(9))
         assert m == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
 
     def test_errors(self):
-        self.assertRaises(ValueError, lambda: Matrix.from_lists())
-        self.assertRaises(ValueError, lambda: Matrix.from_lists([]))
-        self.assertRaises(ValueError, lambda: Matrix.from_joined_lists(3, values=[1, 2, 3, 4, 5]))
-        self.assertRaises(ValueError, lambda: Matrix.from_joined_lists(3, 3, values=[1, 2, 3, 4, 5, 6]))
-        self.assertRaises(ValueError, lambda: Matrix.from_nested_list([]))
-        self.assertRaises(ValueError, lambda: Matrix.from_nested_list("test"))  # noqa
-        self.assertRaises(ValueError, lambda: Matrix.from_nested_list([[], [], []]))
-        self.assertRaises(ValueError, lambda: Matrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
-        self.assertRaises(ValueError, lambda: Matrix.generate(3, 3, lambda x, y, z: x + y + z))
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_lists())
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_lists([]))
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_joined_lists(3, values=[1, 2, 3, 4, 5]))
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_joined_lists(3, 3, values=[1, 2, 3, 4, 5, 6]))
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([]))
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list("test"))  # noqa
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[], [], []]))
+        self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
+        self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y, z: x + y + z))
 
 
 class Indexing(unittest.TestCase):
     def setUp(self) -> None:
-        self.m = Matrix.from_joined_lists(3, values=range(6))
+        self.m = NumericMatrix.from_joined_lists(3, values=range(6))
         # 0 1 2
         # 3 4 5
 
@@ -155,7 +162,7 @@ class Indexing(unittest.TestCase):
 
 class Slicing(unittest.TestCase):
     def setUp(self) -> None:
-        self.m = Matrix.from_joined_lists(4, values=range(20))
+        self.m = NumericMatrix.from_joined_lists(4, values=range(20))
         # 0 1 2 3
         # 4 5 6 7
         # 8 9 10 11
@@ -185,14 +192,14 @@ class Slicing(unittest.TestCase):
 
 class Math(unittest.TestCase):
     def setUp(self) -> None:
-        self.A = Matrix.from_joined_lists(4, values=range(20))
-        self.B = Matrix.from_lists([1, 2], [3, 4], [5, 6])
-        self.C = Matrix.from_lists([1, 3, 5], [2, 4, 6])
-        self.D = Matrix.from_lists([1, 2], [3, 4])
-        self.E = Matrix.identity(3)
-        self.F = Matrix.from_lists([1, 1], [2, 2])
-        self.G = Matrix.from_lists([-1, -2], [1, 2])
-        self.H = Matrix.from_lists([0, -1], [3, 4])
+        self.A = NumericMatrix.from_joined_lists(4, values=range(20))
+        self.B = NumericMatrix.from_lists([1, 2], [3, 4], [5, 6])
+        self.C = NumericMatrix.from_lists([1, 3, 5], [2, 4, 6])
+        self.D = NumericMatrix.from_lists([1, 2], [3, 4])
+        self.E = NumericMatrix.identity(3)
+        self.F = NumericMatrix.from_lists([1, 1], [2, 2])
+        self.G = NumericMatrix.from_lists([-1, -2], [1, 2])
+        self.H = NumericMatrix.from_lists([0, -1], [3, 4])
 
     def test_mul_to_number(self):
         assert self.E * 3 == [[3, 0, 0], [0, 3, 0], [0, 0, 3]]
@@ -217,30 +224,30 @@ class Math(unittest.TestCase):
     def test_add_matrix(self):
         assert self.G + self.F == self.H
         assert self.F + self.G == self.H
-        assert self.E + Matrix.zero_matrix(self.E.width) == self.E
+        assert self.E + NumericMatrix.zero_matrix(self.E.width) == self.E
 
         self.G += self.F
         assert self.G == self.H
         self.assertRaises(AttributeError, lambda: self.C + self.D)
 
     def test_sub_matrix(self):
-        assert self.D - self.D == Matrix.zero_matrix(self.D.width)
+        assert self.D - self.D == NumericMatrix.zero_matrix(self.D.width)
 
         self.E -= self.E
-        assert self.E == Matrix.zero_matrix(self.E.width)
+        assert self.E == NumericMatrix.zero_matrix(self.E.width)
         self.assertRaises(AttributeError, lambda: self.C - self.D)
 
     def test_mul_matrix(self):
-        m = Matrix(1, 2, [[1, 2]])
-        m2 = Matrix(2, 1, [[1], [2]])
+        m = NumericMatrix(1, 2, [[1, 2]])
+        m2 = NumericMatrix(2, 1, [[1], [2]])
         assert m * m2 == [[5]]
         assert m == [[1, 2]]
         m *= m2
         assert m == [[5]]
-        assert Matrix.from_nested_list([[1, 2, 3], [3, 4, 2], [3, 2, 1]]) * Matrix.from_nested_list(
+        assert NumericMatrix.from_nested_list([[1, 2, 3], [3, 4, 2], [3, 2, 1]]) * NumericMatrix.from_nested_list(
             [[1, 1, 1], [3, 4, 2], [3, 2, 1]]
-        ) == Matrix.from_nested_list([[16, 15, 8], [21, 23, 13], [12, 13, 8]])
-        assert Matrix.from_lists([2, 0], [1, 9]) * Matrix.from_lists([3, 9], [4, 7]) == Matrix.from_lists(
+        ) == NumericMatrix.from_nested_list([[16, 15, 8], [21, 23, 13], [12, 13, 8]])
+        assert NumericMatrix.from_lists([2, 0], [1, 9]) * NumericMatrix.from_lists([3, 9], [4, 7]) == NumericMatrix.from_lists(
             [6, 18], [39, 72]
         )
         # FIXME:  assert self.C * self.E == self.C
@@ -269,7 +276,7 @@ class Math(unittest.TestCase):
 
 class MirroringAndRotating(unittest.TestCase):
     def setUp(self) -> None:
-        self.M = Matrix.from_joined_lists(3, values=range(9))
+        self.M = NumericMatrix.from_joined_lists(3, values=range(9))
         # 0 1 2
         # 3 4 5
         # 6 7 8
@@ -305,14 +312,14 @@ class MirroringAndRotating(unittest.TestCase):
 
 class LogicWithBitMatrix(unittest.TestCase):
     def setUp(self) -> None:
-        self.A = Matrix(2, 2, [[True, True], [False, False]])
-        self.B = Matrix(2, 2, [[True, False], [True, False]])
-        self.C = Matrix(1, 1, [[True]])
-        self.D = Matrix.zero_matrix(3, boolean_matrix=True)
+        self.A = BitMatrix(2, 2, [[True, True], [False, False]])
+        self.B = BitMatrix(2, 2, [[True, False], [True, False]])
+        self.C = BitMatrix(1, 1, [[True]])
+        self.D = BitMatrix.zero_matrix(3)
         # self.D1 = Matrix.zero_matrix(3)
-        self.E = Matrix.identity(3, boolean_matrix=True)
+        self.E = BitMatrix.identity(3)
         # self.E1 = Matrix.identity(3)
-        self.F = Matrix.zero_matrix(size=(3, 2), boolean_matrix=True)
+        self.F = BitMatrix.zero_matrix(size=(3, 2))
 
     def test_boolean_generator(self):
         assert self.D == False
@@ -321,15 +328,15 @@ class LogicWithBitMatrix(unittest.TestCase):
         assert self.F == [[False, False, False], [False, False, False]]
 
     def test_compare_to_bool(self):
-        # Matrix.identity(3) == True == error
+        assert BitMatrix.identity(3) != False
         assert self.A != True
         assert self.B != True
         assert self.A != False
         assert self.B != False
-        assert Matrix.from_nested_list([[True, True], [True, True]]) == True
-        assert Matrix.from_nested_list([[False, False], [False, False]]) == False
-        assert Matrix.from_nested_list([[True, True], [True, True]]) != False
-        assert Matrix.from_nested_list([[False, False], [False, False]]) != True
+        assert BitMatrix.from_nested_list([[True, True], [True, True]]) == True
+        assert BitMatrix.from_nested_list([[False, False], [False, False]]) == False
+        assert BitMatrix.from_nested_list([[True, True], [True, True]]) != False
+        assert BitMatrix.from_nested_list([[False, False], [False, False]]) != True
         assert self.C == True
         assert self.C != False
 
@@ -398,27 +405,26 @@ class LogicWithBitMatrix(unittest.TestCase):
 
 class Iterators(unittest.TestCase):
     def setUp(self) -> None:
-        self.m = Matrix.from_joined_lists(3, values=range(9))
+        self.m = NumericMatrix.from_joined_lists(3, values=range(9))
 
     def test_default_iterator(self):
         for index, item in enumerate(self.m):
             assert index == item
 
     def test_reversed_iterator(self):
-        for index, item in enumerate(self.m.get_iterator(Matrix.Walkthrow.REVERSED)):
+
+        for index, item in enumerate(MatrixIterator.iterate(self.m, Matrix.Walkthrow.REVERSED)):
             assert index == 8 - item
 
     def test_snake_iterator(self):
-        assert list(self.m.get_iterator(Matrix.Walkthrow.SNAKE)) == [0, 1, 2, 5, 4, 3, 6, 7, 8], list(
-            self.m.get_iterator(Matrix.Walkthrow.SNAKE)
-        )
+        assert list(MatrixIterator.iterate(self.m, Matrix.Walkthrow.SNAKE)) == [0, 1, 2, 5, 4, 3, 6, 7, 8]
 
     @unittest.skip("Not Implemented")
     def test_spiral_iterator(self):
-        assert list(self.m.get_iterator(Matrix.Walkthrow.SPIRAL)) == [0, 1, 2, 5, 8, 7, 6, 3, 4]
+        assert list(MatrixIterator.iterate(self.m, Matrix.Walkthrow.SPIRAL)) == [0, 1, 2, 5, 8, 7, 6, 3, 4]
 
     def test_rows_iterator(self):
-        assert list(self.m.get_iterator(Matrix.Walkthrow.ROWS)) == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+        assert list(MatrixIterator.iterate(self.m, Matrix.Walkthrow.ROWS)) == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
 
     def test_columns_iterator(self):
-        assert list(self.m.get_iterator(Matrix.Walkthrow.COLUMNS)) == [[0, 3, 6], [1, 4, 7], [2, 5, 8]]
+        assert list(MatrixIterator.iterate(self.m, Matrix.Walkthrow.COLUMNS)) == [[0, 3, 6], [1, 4, 7], [2, 5, 8]]
