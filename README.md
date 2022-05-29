@@ -4,6 +4,13 @@ Practice custom data structures.
 
 *Also testing Github Actions on that repo.*
 
+# Badges
+
+[![Tests](https://github.com/Quantum-0/custom-python-structures/actions/workflows/tests.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/tests.yml)
+[![Black](https://github.com/Quantum-0/custom-python-structures/actions/workflows/black.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/black.yml)
+[![MyPy](https://github.com/Quantum-0/custom-python-structures/actions/workflows/mypy.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/mypy.yml)
+[![PyLint](https://github.com/Quantum-0/custom-python-structures/actions/workflows/lint.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/lint.yml)
+
 # Structures
 
 ## LoopList
