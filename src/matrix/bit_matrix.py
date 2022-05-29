@@ -4,7 +4,7 @@ from typing import Union, Tuple, List, Any, TypeVar
 from src.matrix.matrix import Matrix
 
 
-Self = TypeVar("Self", bound="NumericMatrix")
+Self = TypeVar("Self", bound="BitMatrix")
 
 
 class BitMatrix(Matrix[bool]):
