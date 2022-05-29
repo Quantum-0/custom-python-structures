@@ -60,11 +60,13 @@ class NumericMatrix(Matrix[_MVT]):
         det = self.determinant
         if self.width > 2:
             raise NotImplementedError("Inverse matrix for > 2x2 is not supported yet")
-        return NumericMatrix(width=2, height=2, values=
-            [
+        return NumericMatrix(
+            width=2,
+            height=2,
+            values=[
                 [self._values[1][1] / det, -1 * self._values[0][1] / det],
                 [-1 * self._values[1][0] / det, self._values[0][0] / det],
-            ]
+            ],
         )
 
     def __add__(self, other: Matrix[_MVT]) -> NumericMatrix[_MVT]:
