@@ -1,0 +1,15 @@
+name: Coverage
+
+on: [push, pull_request]
+
+jobs:
+  black-list:
+    name: Coverage percent check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: VeryGoodOpenSource/very_good_coverage@v1
+      with:
+        # path: './coverage/lcov.info'
+        min_coverage: 95
+        exclude: 'tests/**'
