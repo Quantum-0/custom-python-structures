@@ -4,7 +4,7 @@ from typing import Union, Tuple, List, Any, TypeVar
 from src.matrix.matrix import Matrix
 
 
-Self = TypeVar('Self', bound='NumericMatrix')
+Self = TypeVar("Self", bound="NumericMatrix")
 
 
 class BitMatrix(Matrix[bool]):
@@ -42,19 +42,14 @@ class BitMatrix(Matrix[bool]):
         return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x ^ y)
 
     def __neg__(self) -> Self:
-        return BitMatrix(width=self.width, height=self.height, values=[
-            [
-                not self._values[j][i] for i in range(self.width)
-            ]
-            for j in range(self.height)
-        ])
+        return BitMatrix(
+            width=self.width,
+            height=self.height,
+            values=[[not self._values[j][i] for i in range(self.width)] for j in range(self.height)],
+        )
 
     def __sub__(self, other: Matrix) -> Self:
-        return self.__base_binary_operation_creating_new_entity__(
-            other, lambda x, y: x and not y
-        )
+        return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x and not y)
 
     def __isub__(self, other: Matrix) -> Self:
-        return self.__base_binary_operation_applying_to_self__(
-            other, lambda x, y: x and not y
-        )
+        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x and not y)

@@ -57,8 +57,8 @@ class Equal(unittest.TestCase):
         assert one2x3 in self.one3
         assert self.one2 in NumericMatrix.from_nested_list(one2x3)
         assert self.zero3 not in self.zero2
-        assert NumericMatrix.from_joined_lists(3, values=range(9)) not in NumericMatrix.from_joined_lists(2, values=range(4))
-        assert NumericMatrix.from_joined_lists(2, values=range(4)) not in NumericMatrix.from_joined_lists(3, values=range(9))
+        assert Matrix.from_joined_lists(3, values=range(9)) not in Matrix.from_joined_lists(2, values=range(4))
+        assert Matrix.from_joined_lists(2, values=range(4)) not in Matrix.from_joined_lists(3, values=range(9))
 
 
 class PreDefined(unittest.TestCase):
@@ -247,9 +247,9 @@ class Math(unittest.TestCase):
         assert NumericMatrix.from_nested_list([[1, 2, 3], [3, 4, 2], [3, 2, 1]]) * NumericMatrix.from_nested_list(
             [[1, 1, 1], [3, 4, 2], [3, 2, 1]]
         ) == NumericMatrix.from_nested_list([[16, 15, 8], [21, 23, 13], [12, 13, 8]])
-        assert NumericMatrix.from_lists([2, 0], [1, 9]) * NumericMatrix.from_lists([3, 9], [4, 7]) == NumericMatrix.from_lists(
-            [6, 18], [39, 72]
-        )
+        assert NumericMatrix.from_lists([2, 0], [1, 9]) * NumericMatrix.from_lists(
+            [3, 9], [4, 7]
+        ) == NumericMatrix.from_lists([6, 18], [39, 72])
         # FIXME:  assert self.C * self.E == self.C
         self.assertRaises(AttributeError, lambda: self.E * self.F)
 

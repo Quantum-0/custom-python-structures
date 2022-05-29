@@ -4,7 +4,7 @@ from typing import TypeVar, Union, Tuple
 from src.matrix.matrix import Matrix
 
 _MVT = TypeVar("_MVT", float, int, complex)
-Self = TypeVar('Self', bound='NumericMatrix')
+Self = TypeVar("Self", bound="NumericMatrix")
 
 
 class NumericMatrix(Matrix[_MVT]):
@@ -29,7 +29,6 @@ class NumericMatrix(Matrix[_MVT]):
     @property
     def trace(self) -> _MVT:
         return sum(self.main_diagonal)
-
 
     @property
     def determinant(self) -> float:
@@ -74,14 +73,10 @@ class NumericMatrix(Matrix[_MVT]):
         return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x + y)
 
     def __sub__(self, other: Matrix) -> Matrix[_MVT]:
-        return self.__base_binary_operation_creating_new_entity__(
-            other, lambda x, y: x - y
-        )
+        return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x - y)
 
     def __isub__(self, other: Matrix) -> Matrix[_MVT]:
-        return self.__base_binary_operation_applying_to_self__(
-            other, lambda x, y: x - y
-        )
+        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x - y)
 
     def __itruediv__(self, other: Union[int, float]) -> Matrix[_MVT]:
         if not isinstance(other, (int, float, complex)):
@@ -133,9 +128,8 @@ class NumericMatrix(Matrix[_MVT]):
         return Matrix(self.width, other.width, new_values)
 
     def __neg__(self) -> Self:
-        return NumericMatrix(width=self.width, height=self.height, values=[
-            [
-                -self._values[j][i] for i in range(self.width)
-            ]
-            for j in range(self.height)
-        ])
+        return NumericMatrix(
+            width=self.width,
+            height=self.height,
+            values=[[-self._values[j][i] for i in range(self.width)] for j in range(self.height)],
+        )

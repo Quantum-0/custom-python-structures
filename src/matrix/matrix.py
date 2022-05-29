@@ -7,7 +7,7 @@ from typing import Tuple, Union, List, Generic, TypeVar, Optional
 # Matrix Value Type & Matrix Key Type
 _MVT = TypeVar("_MVT")
 _MKT = TypeVar("_MKT", Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice])
-Self = TypeVar('Self', bound='Matrix')
+Self = TypeVar("Self", bound="Matrix")
 
 
 class NotSquareMatrix(ValueError):
