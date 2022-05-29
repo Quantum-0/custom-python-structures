@@ -21,7 +21,7 @@ class MatrixIterator(Iterator[_MVT], ABC):
     def __iter__(self) -> MatrixIterator[_MVT]:
         return self
 
-    def __next__(self) -> _MVT:
+    def __next__(self) -> _MVT:  # pragma: no cover
         raise NotImplementedError
 
     @classmethod

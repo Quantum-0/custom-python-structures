@@ -34,6 +34,8 @@ class Equal(unittest.TestCase):
         self.one3 = NumericMatrix.identity(3)
         self.zero2 = NumericMatrix.zero_matrix(2)
         self.one2 = NumericMatrix.identity(2)
+        self.m3 = Matrix.from_joined_lists(3, values=range(9))
+        self.m2 = Matrix.from_joined_lists(2, values=range(4))
 
     def test_eq(self):
         assert self.zero3 != self.one3
@@ -44,6 +46,7 @@ class Equal(unittest.TestCase):
         assert self.one3 != self.one2
         assert self.zero3.main_diagonal == [0, 0, 0]
         assert self.one2.main_diagonal == [1, 1]
+        assert self.m2 != 42
 
     def test_contains(self):
         zero2x3 = [[0, 0], [0, 0], [0, 0]]
@@ -57,8 +60,8 @@ class Equal(unittest.TestCase):
         assert one2x3 in self.one3
         assert self.one2 in NumericMatrix.from_nested_list(one2x3)
         assert self.zero3 not in self.zero2
-        assert Matrix.from_joined_lists(3, values=range(9)) not in Matrix.from_joined_lists(2, values=range(4))
-        assert Matrix.from_joined_lists(2, values=range(4)) not in Matrix.from_joined_lists(3, values=range(9))
+        assert self.m3 not in self.m2
+        assert self.m2 not in self.m3
 
 
 class PreDefined(unittest.TestCase):
@@ -146,6 +149,13 @@ class Indexing(unittest.TestCase):
         assert self.m[1, 1] == 4
         assert self.m[2, 1] == 5
 
+    def test_setting(self):
+        for i in range(3):
+            for j in range(2):
+                assert self.m[i, j] == i + j * 3
+                self.m[i, j] = 25
+                assert self.m[i, j] == 25
+
     def test_index_error(self):
         self.assertRaises(IndexError, lambda: self.m[-1, 0])
         self.assertRaises(IndexError, lambda: self.m[0, -1])
@@ -159,8 +169,20 @@ class Indexing(unittest.TestCase):
         self.assertRaises(IndexError, lambda: self.m[1.5, 2])  # noqa
         self.assertRaises(IndexError, lambda: self.m[0:2])  # noqa
 
+        def set_val(index, value):
+            self.m[index] = value
+
+        self.assertRaises(IndexError, lambda: set_val(0, 0))
+        self.assertRaises(IndexError, lambda: set_val((), 0))
+        self.assertRaises(IndexError, lambda: set_val((1, 2, 3), 0))
+        self.assertRaises(IndexError, lambda: set_val((slice(1, 2), "test"), 0))
+        self.assertRaises(IndexError, lambda: set_val((slice(1, 2), 5), 0))
+        self.assertRaises(IndexError, lambda: set_val((-1, 1), 0))
+
 
 class Slicing(unittest.TestCase):
+    # TODO: Add test setitem
+
     def setUp(self) -> None:
         self.m = NumericMatrix.from_joined_lists(4, values=range(20))
         # 0 1 2 3
@@ -168,6 +190,8 @@ class Slicing(unittest.TestCase):
         # 8 9 10 11
         # 12 13 14 15
         # 16 17 18 19
+        self.m2 = NumericMatrix.from_joined_lists(2, values=range(4))
+        self.m3 = NumericMatrix.from_joined_lists(3, values=range(9))
 
     def test_vertical_slice(self):
         assert self.m[1, :] == [1, 5, 9, 13, 17], self.m[1, :]
@@ -188,6 +212,12 @@ class Slicing(unittest.TestCase):
 
     def test_index_error(self):
         pass
+
+    def test_minor(self):
+        assert self.m3.get_minor(0, 0) == Matrix(2, 2, [[4, 5], [7, 8]])
+        assert self.m3.get_minor(1, 1) == Matrix(2, 2, [[0, 2], [6, 8]])
+        assert self.m3.get_minor(2, 2) == self.m3[:2, :2]
+        assert self.m3.get_minor(0, 0).get_minor(1, 1) == [[4]]
 
 
 class Math(unittest.TestCase):
@@ -408,11 +438,10 @@ class Iterators(unittest.TestCase):
         self.m = NumericMatrix.from_joined_lists(3, values=range(9))
 
     def test_default_iterator(self):
-        for index, item in enumerate(self.m):
+        for index, item in enumerate(MatrixIterator.iterate(self.m, Matrix.Walkthrow.DEFAULT)):
             assert index == item
 
     def test_reversed_iterator(self):
-
         for index, item in enumerate(MatrixIterator.iterate(self.m, Matrix.Walkthrow.REVERSED)):
             assert index == 8 - item
 

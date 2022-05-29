@@ -62,7 +62,8 @@ class Matrix(Generic[_MVT]):
 
         if isinstance(key[0], int) and isinstance(key[1], int):
             self._values[key[1]][key[0]] = value
-        raise NotImplementedError()
+        else:
+            raise NotImplementedError()
 
     def __contains__(self, item: Union[Matrix[_MVT], List[List[_MVT]]]) -> bool:
         other = Matrix.from_nested_list(item) if isinstance(item, List) else item
@@ -165,7 +166,7 @@ class Matrix(Generic[_MVT]):
         *,
         width_first: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
-    ) -> Matrix:
+    ) -> Matrix:  # pragma: no cover
         if width_first:
             height = height or int(input())
             width = width or int(input())
