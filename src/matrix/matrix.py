@@ -22,7 +22,7 @@ class Matrix(Generic[_MVT]):
     def __getitem__(
         self,
         index: _MKT,
-    ) -> Union[List[_MVT], List[List[_MVT]], _MVT]:
+    ) -> Union[_MVT, List[_MVT], List[List[_MVT]]]:
         # Type Check
         if not isinstance(index, tuple):
             raise IndexError("Index must be tuple")
@@ -107,7 +107,7 @@ class Matrix(Generic[_MVT]):
         value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
         *,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
-    ) -> Matrix:
+    ):
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
         values = []
         for j in range(height):
@@ -128,7 +128,7 @@ class Matrix(Generic[_MVT]):
         return cls(width=width, height=height, values=values)
 
     @classmethod
-    def from_nested_list(cls, values: List[List[_MVT]]) -> Matrix:
+    def from_nested_list(cls, values: List[List[_MVT]]) -> Matrix[_MVT]:
         if not isinstance(values, list):
             raise ValueError()
         height = len(values)
@@ -233,7 +233,7 @@ class Matrix(Generic[_MVT]):
         self,
         other: Matrix[_MVT] = None,
         operation: Callable[[_MVT, _MVT], _MVT] = None,
-    ) -> Matrix:
+    ):
         # Check if operation is defined
         assert operation is not None
         # Check argument
@@ -256,7 +256,7 @@ class Matrix(Generic[_MVT]):
         self,
         other: Matrix[_MVT] = None,
         operation: Callable[[_MVT, _MVT], _MVT] = None,
-    ) -> Matrix:
+    ):
         # Check if operation is defined
         assert operation is not None
         # Check argument

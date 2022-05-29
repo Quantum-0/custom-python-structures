@@ -92,7 +92,7 @@ class NumericMatrix(Matrix[_MVT]):
 
         return self
 
-    def __imul__(self, other: Union[NumericMatrix, int, float]) -> Self:
+    def __imul__(self, other: Union[NumericMatrix, int, float]) -> NumericMatrix[_MVT]:
         if isinstance(other, NumericMatrix):
             new_values = []
             for i in range(0, self.width):
@@ -113,9 +113,9 @@ class NumericMatrix(Matrix[_MVT]):
 
         return self
 
-    def __mul__(self, other: Union[NumericMatrix, int, float]) -> NumericMatrix[_MVT]:
-        if isinstance(other, (int, float, complex)):
-            return NumericMatrix.from_nested_list([[elem * other for elem in row] for row in self._values])
+    def __mul__(self, other: Union[NumericMatrix, _MVT]) -> NumericMatrix[_MVT]:
+        if isinstance(other, (int, float)):
+            return NumericMatrix(self._width, self._height, [[elem * other for elem in row] for row in self._values])
 
         if not isinstance(other, Matrix):
             raise AttributeError()
