@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC
 from collections.abc import Iterable
-from typing import List, Type, ClassVar
+from typing import List, Type, ClassVar, Union
 
 from src.matrix.matrix import Matrix, _MVT
 
@@ -11,7 +11,7 @@ class MatrixIterator(Iterable[_MVT], ABC):
 
     @classmethod
     def iterate(cls, matrix: Matrix, iteration_type: Matrix.Walkthrow):
-        iter_type: Type[MatrixIterator[_MVT]] = cls._get_iterator_type(walkthrow_type=iteration_type)
+        iter_type: Type[MatrixIterator] = cls._get_iterator_type(walkthrow_type=iteration_type)
         return iter_type(matrix)
 
     def __init__(self, matrix: Matrix):
@@ -28,7 +28,7 @@ class MatrixIterator(Iterable[_MVT], ABC):
             raise StopIteration()
 
     @classmethod
-    def _get_iterator_type(cls, walkthrow_type: Matrix.Walkthrow) -> Type[MatrixIterator[_MVT]]:
+    def _get_iterator_type(cls, walkthrow_type: Matrix.Walkthrow) -> Type[MatrixIterator]:
         found = [iterator for iterator in cls.__subclasses__() if iterator.WALKTHROW_TYPE == walkthrow_type]
         assert len(found) < 2, f"Duplicate implementation for iterator {walkthrow_type}: {found}"
         assert len(found) == 1, f"Cannot find implementation for iterator {walkthrow_type}"
@@ -81,7 +81,7 @@ class SpiralMatrixIterator(MatrixIterator):
 class RowMatrixIterator(MatrixIterator):
     WALKTHROW_TYPE = Matrix.Walkthrow.ROWS
 
-    def __next__(self) -> List[_MVT]:
+    def __next__(self) -> list:  # type: ignore
         if self._ptr >= self._matrix.height:
             raise StopIteration
         value = self._matrix[:, self._ptr]
@@ -92,7 +92,7 @@ class RowMatrixIterator(MatrixIterator):
 class ColumnMatrixIterator(MatrixIterator):
     WALKTHROW_TYPE = Matrix.Walkthrow.COLUMNS
 
-    def __next__(self) -> List[_MVT]:
+    def __next__(self) -> list:  # type: ignore
         if self._ptr == self._matrix.width:
             raise StopIteration
         value = self._matrix[self._ptr, :]

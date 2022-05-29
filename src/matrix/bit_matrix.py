@@ -18,7 +18,7 @@ class BitMatrix(Matrix[bool]):
     def identity(cls, size: int) -> BitMatrix:
         return cls.generate(width=size, height=size, value=lambda x, y: x == y)
 
-    def __eq__(self, other: Union[List[List[Any]], BitMatrix, bool]) -> bool:
+    def __eq__(self, other: Union[List[List[Any]], BitMatrix, bool, object]) -> bool:
         if isinstance(other, bool):
             return all(all(elem is other for elem in row) for row in self._values)
         return super().__eq__(other)

@@ -1,13 +1,15 @@
 from __future__ import annotations
-from typing import TypeVar, Union, Tuple
+from typing import TypeVar, Union, Tuple, List
 
 from src.matrix.matrix import Matrix
 
-_MVT = TypeVar("_MVT", float, int, complex)
+_MVT = TypeVar("_MVT", float, int)  # complex
 Self = TypeVar("Self", bound="NumericMatrix")
 
 
 class NumericMatrix(Matrix[_MVT]):
+    _values: List[List[_MVT]]
+
     @classmethod
     def zero_matrix(cls, size: Union[int, Tuple[int, int]]) -> Self:
         if isinstance(size, int):
@@ -38,10 +40,10 @@ class NumericMatrix(Matrix[_MVT]):
         for fd in range(self.width):
             for i in range(fd + 1, self.width):
                 if matrix[fd][fd] == 0:
-                    matrix[fd][fd] = 1.0e-18
+                    matrix[fd][fd] = 1.0e-18  # type: ignore
                 s = matrix[i][fd] / matrix[fd][fd]
                 for j in range(self.width):
-                    matrix[i][j] = matrix[i][j] - s * matrix[fd][j]
+                    matrix[i][j] = matrix[i][j] - s * matrix[fd][j]  # type: ignore
         p = 1.0
         for i in range(self.width):
             p *= matrix[i][i]
@@ -54,11 +56,11 @@ class NumericMatrix(Matrix[_MVT]):
         #     determinant += ((-1) ** c) * self._values[0][c] * self.determinant(self._minor(0, c))
         # return determinant
 
-    def __invert__(self):
+    def __invert__(self) -> Self:
         det = self.determinant
         if self.width > 2:
             raise NotImplementedError("Inverse matrix for > 2x2 is not supported yet")
-        return Matrix.from_nested_list(
+        return self.from_nested_list(
             [
                 [self._values[1][1] / det, -1 * self._values[0][1] / det],
                 [-1 * self._values[1][0] / det, self._values[0][0] / det],
@@ -83,12 +85,12 @@ class NumericMatrix(Matrix[_MVT]):
 
         for i in range(self.width):
             for j in range(self.height):
-                self._values[i][j] /= other
+                self._values[i][j] /= other  # type: ignore
 
         return self
 
-    def __imul__(self, other: Union[Matrix, int, float]) -> Self:
-        if isinstance(other, Matrix):
+    def __imul__(self, other: Union[NumericMatrix, int, float]) -> Self:
+        if isinstance(other, NumericMatrix):
             new_values = []
             for i in range(0, self.width):
                 row = []
@@ -102,15 +104,15 @@ class NumericMatrix(Matrix[_MVT]):
         if not isinstance(other, (int, float, complex)):
             raise AttributeError()
 
-        for i in range(self.width):
-            for j in range(self.height):
-                self._values[i][j] *= other
+        for j in range(self.height):
+            for i in range(self.width):
+                self._values[i][j] *= other  # type: ignore
 
         return self
 
-    def __mul__(self, other: Union[Matrix, _MVT]) -> Self:
+    def __mul__(self, other: Union[NumericMatrix, int, float]) -> Self:
         if isinstance(other, (int, float, complex)):
-            return Matrix.from_nested_list([[elem * other for elem in row] for row in self._values])
+            return self.__class__.from_nested_list([[elem * other for elem in row] for row in self._values])
 
         if not isinstance(other, Matrix):
             raise AttributeError()
@@ -124,7 +126,7 @@ class NumericMatrix(Matrix[_MVT]):
             for j in range(0, other.height):
                 row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
             new_values.append(row)
-        return Matrix(self.width, other.width, new_values)
+        return self.__class__(self.width, other.width, new_values)
 
     def __neg__(self) -> Self:
         return NumericMatrix(

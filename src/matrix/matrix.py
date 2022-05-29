@@ -7,7 +7,6 @@ from typing import Tuple, Union, List, Generic, TypeVar, Optional
 # Matrix Value Type & Matrix Key Type
 _MVT = TypeVar("_MVT")
 _MKT = TypeVar("_MKT", Tuple[int, int], Tuple[int, slice], Tuple[slice, int], Tuple[slice, slice])
-Self = TypeVar("Self", bound="Matrix")
 
 
 class NotSquareMatrix(ValueError):
@@ -108,7 +107,7 @@ class Matrix(Generic[_MVT]):
         value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
         *,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
-    ) -> Self:
+    ) -> Matrix:
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
         values = []
         for j in range(height):
@@ -129,7 +128,7 @@ class Matrix(Generic[_MVT]):
         return cls(width=width, height=height, values=values)
 
     @classmethod
-    def from_nested_list(cls, values: List[List[_MVT]]) -> Self:
+    def from_nested_list(cls, values: List[List[_MVT]]) -> Matrix:
         if not isinstance(values, list):
             raise ValueError()
         height = len(values)
@@ -143,10 +142,10 @@ class Matrix(Generic[_MVT]):
         return cls(width, height, values)
 
     @classmethod
-    def from_joined_lists(cls, width: int, height: int = None, *, values: List[_MVT] or range) -> Self:
+    def from_joined_lists(cls, width: int, height: int = None, *, values: Union[List[_MVT], range]) -> Matrix:
         lists = []
         if isinstance(values, range):
-            values = list(values)
+            values = list(values)  # type: ignore # FIXME
         for i in range(0, len(values), width):
             lists.append(values[i : i + width])
         if height and len(lists) != height or len(lists[-1]) != width:
@@ -154,7 +153,7 @@ class Matrix(Generic[_MVT]):
         return cls.from_nested_list(lists)
 
     @classmethod
-    def from_lists(cls, *lists: List[_MVT]) -> Self:
+    def from_lists(cls, *lists: List[_MVT]) -> Matrix:
         return cls.from_nested_list(values=list(lists))
 
     @classmethod
@@ -162,11 +161,11 @@ class Matrix(Generic[_MVT]):
         cls,
         height: Optional[int] = None,
         width: Optional[int] = None,
-        postprocess: Callable[[str]:_MVT] = int,
+        postprocess: Callable[[str], _MVT] = int.__call__,
         *,
         width_first: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
-    ) -> Self:
+    ) -> Matrix:
         if width_first:
             height = height or int(input())
             width = width or int(input())
@@ -199,43 +198,42 @@ class Matrix(Generic[_MVT]):
             [row[:j] + row[j + 1 :] for row in (self._values[:i] + self._values[i + 1 :])],
         )
 
-    def __eq__(self, other: Union[List[List[_MVT]], Matrix[_MVT]]) -> bool:
+    def __eq__(self, other: Union[List[List[_MVT]], Matrix[_MVT], object]) -> bool:
         if isinstance(other, Matrix):
             return self.size == other.size and self._values == other._values
-        return self._values == other
-
-    def __ne__(self, other: Union[List[List[_MVT]], Matrix[_MVT]]) -> bool:
-        return not self.__eq__(other)
+        if isinstance(other, list) and all(isinstance(l, list) for l in other):
+            return self._values == other
+        return False
 
     @property
-    def rotated_counterclockwise(self):
-        return Matrix(
+    def rotated_counterclockwise(self) -> Matrix:
+        return self.__class__(
             self._height,
             self._width,
             [[self._values[j][i] for j in range(self.height)] for i in range(self.width - 1, -1, -1)],
         )
 
     @property
-    def rotated_clockwise(self):
-        return Matrix(
+    def rotated_clockwise(self) -> Matrix:
+        return self.__class__(
             self._height,
             self._width,
             [[self._values[j][i] for j in range(self.height - 1, -1, -1)] for i in range(0, self.width)],
         )
 
     @property
-    def mirrored_horizontaly(self):
-        return Matrix(self._width, self.height, [row[::-1] for row in self._values])
+    def mirrored_horizontaly(self) -> Matrix:
+        return self.__class__(self._width, self.height, [row[::-1] for row in self._values])
 
     @property
-    def mirrored_verticaly(self):
-        return Matrix(self._width, self.height, [row[::] for row in self._values[::-1]])
+    def mirrored_verticaly(self) -> Matrix:
+        return self.__class__(self._width, self.height, [row[::] for row in self._values[::-1]])
 
     def __base_binary_operation_creating_new_entity__(
         self,
         other: Matrix[_MVT] = None,
         operation: Callable[[_MVT, _MVT], _MVT] = None,
-    ) -> Self:
+    ) -> Matrix:
         # Check if operation is defined
         assert operation is not None
         # Check argument
@@ -257,7 +255,7 @@ class Matrix(Generic[_MVT]):
         self,
         other: Matrix[_MVT] = None,
         operation: Callable[[_MVT, _MVT], _MVT] = None,
-    ) -> Self:
+    ) -> Matrix:
         # Check if operation is defined
         assert operation is not None
         # Check argument

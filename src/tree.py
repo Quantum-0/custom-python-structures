@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Sized
-from typing import Any, Set, Union
+from typing import Any, Set, Union, Optional
 
 
 class TreeNode(Sized):
     def __init__(self, value: Any):
         self.value: Any = value
         self._children: Set[TreeNode] = set()
-        self._parent = None
+        self._parent: Optional[TreeNode] = None
 
     def __del__(self):
         for child in self._children:
