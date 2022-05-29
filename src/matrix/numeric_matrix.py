@@ -26,7 +26,7 @@ class NumericMatrix(Matrix[_MVT]):
 
     @property
     def is_identity(self) -> bool:
-        return all(all(elem == (1 if i == j else 0) for i, elem in enumerate(row)) for j, row in enumerate(self._values))
+        return all(all(val == (1 if i == j else 0) for i, val in enumerate(row)) for j, row in enumerate(self._values))
 
     @property
     def trace(self) -> _MVT:
