@@ -106,7 +106,7 @@ class Matrix(Generic[_MVT]):
         height,
         value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
         *,
-        walkthrow: Walkthrow = Walkthrow.DEFAULT,
+        walkthrow: Walkthrow = Walkthrow.DEFAULT,  # type: ignore # pylint: disable=W0613 # TODO
     ):
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
         values = []
