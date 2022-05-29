@@ -195,7 +195,7 @@ class Matrix(Generic[_MVT]):
         return Matrix(
             self.width - 1,
             self.height - 1,
-            [row[:j] + row[j + 1 :] for row in (self._values[:i] + self._values[i + 1 :])],
+            [row[:j] + row[j + 1 :] for row in self._values[:i] + self._values[i + 1 :]],
         )
 
     def __eq__(self, other: Union[List[List[_MVT]], Matrix[_MVT], object]) -> bool:
@@ -234,6 +234,7 @@ class Matrix(Generic[_MVT]):
         other: Matrix[_MVT] = None,
         operation: Callable[[_MVT, _MVT], _MVT] = None,
     ):
+        # pylist: disable=protected-access
         # Check if operation is defined
         assert operation is not None
         # Check argument
@@ -246,7 +247,6 @@ class Matrix(Generic[_MVT]):
             width=self.width,
             height=self.height,
             values=[
-                # pylist: disable=protected-access
                 [operation(self._values[j][i], other._values[j][i]) for i in range(self.width)]
                 for j in range(self.height)
             ],
@@ -257,6 +257,7 @@ class Matrix(Generic[_MVT]):
         other: Matrix[_MVT] = None,
         operation: Callable[[_MVT, _MVT], _MVT] = None,
     ):
+        # pylist: disable=protected-access
         # Check if operation is defined
         assert operation is not None
         # Check argument
@@ -266,6 +267,5 @@ class Matrix(Generic[_MVT]):
             raise AttributeError("Invalid matrix size")
         for i in range(self.width):
             for j in range(self.height):
-                # pylist: disable=protected-access
                 self._values[j][i] = operation(self._values[j][i], other._values[j][i])
         return self

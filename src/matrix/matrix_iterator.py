@@ -21,6 +21,9 @@ class MatrixIterator(Iterator[_MVT], ABC):
     def __iter__(self) -> MatrixIterator[_MVT]:
         return self
 
+    def __next__(self) -> _MVT:
+        raise NotImplementedError
+
     @classmethod
     def _get_iterator_type(cls, walkthrow_type: Matrix.Walkthrow) -> Type[MatrixIterator]:
         found = [iterator for iterator in cls.__subclasses__() if iterator.WALKTHROW_TYPE == walkthrow_type]
