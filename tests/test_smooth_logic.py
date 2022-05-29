@@ -30,8 +30,8 @@ class Tests(unittest.TestCase):
         assert self.today_is_sunny | self.tomorrow_will_be_sunny == Chance(0.79)
         assert self.today_is_sunny ^ self.tomorrow_will_be_sunny == Chance(0.58)
 
-        assert self.today_is_sunny & self.coin == .15
-        assert self.tomorrow_will_be_sunny & self.dice == .7/6
+        assert self.today_is_sunny & self.coin == 0.15
+        assert self.tomorrow_will_be_sunny & self.dice == 0.7 / 6
 
         assert self.coin & self.dice == self.dice & self.coin
         assert self.coin | self.dice == self.dice | self.coin
@@ -42,13 +42,13 @@ class Tests(unittest.TestCase):
         assert self.dice | True == True
         assert self.dice | False == self.dice
         assert self.dice ^ False == self.dice
-        assert ~self.dice == 5/6
+        assert ~self.dice == 5 / 6
 
     def test_weight(self):
-        assert self.coin * 2 == self.coin.chance ** 2
-        assert self.dice * 2 == self.dice.chance ** 2
-        assert self.dice * 3 == self.dice.chance ** 3
-        assert self.coin * 5 == self.coin.chance ** 5
+        assert self.coin * 2 == self.coin.chance**2
+        assert self.dice * 2 == self.dice.chance**2
+        assert self.dice * 3 == self.dice.chance**3
+        assert self.coin * 5 == self.coin.chance**5
 
     def test_dependency_statements(self):
         assert self.dice & self.dice == self.dice

@@ -44,7 +44,7 @@ class Chance:
         elif isinstance(chance, bool):
             self._chance = 1 if chance else 0
         elif isinstance(chance, str):
-            if chance[-1] != '%':
+            if chance[-1] != "%":
                 raise InvalidChanceValue("Chance format is X%")
             self._chance = float(chance[:-1]) / 100
             if not 0 < self._chance < 1:
@@ -141,7 +141,7 @@ class Chance:
 
     def __mul__(self, other) -> Chance:
         if isinstance(other, int):
-            return Chance(chance=self._chance ** other, weight=self._weight * other)
+            return Chance(chance=self._chance**other, weight=self._weight * other)
 
     def __repr__(self):
         # TODO: print as fraction
