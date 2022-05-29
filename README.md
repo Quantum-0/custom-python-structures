@@ -46,3 +46,56 @@ while len(ring) > 1:
     del ring[0]
 return ring[0]
 ```
+
+## Matrix
+```mermaid
+classDiagram
+        Matrix <|-- NumericMatrix
+        Matrix <|-- BitMatrix
+        class Matrix{
+            -_values [[T]]
+            +width int
+            +height int
+            +size tuple
+            +is_square bool
+            +rotated_... Matrix
+            +mirrored_... Matrix
+            +main_diagonal [T]
+            +__getitem__(key)
+            +__setitem__(key, value)
+            +generate(...)
+            +from_nested_list(list of lists)
+            +from_joined_lists(w, h, list)
+            +from_lists(*lists)
+            +input_matrix(...)
+            +transpose()
+            +get_minor(i, j)
+        }
+        class NumericMatrix{
+            +zero_matrix(n, [m]) NumericMatrix
+            +identity(n) NumericMatrix
+            +trace : int or float
+            +determinant : int or float
+            +__add__(other)
+            +__sub__(other)
+            +__mul__(other)
+            +__div__(other)
+            +__invert__()
+            +__neg__()
+        }
+        class BitMatrix{
+            +zero_matrix(n, [m]) BitMatrix
+            +identity(n) BitMatrix
+            +__and__(other)
+            +__or__(other)
+            +__xor__(other)
+            +__sub__(other)
+            +__neg__()
+        }
+        MatrixIterator --o Matrix
+        MatrixIterator: matrix
+        MatrixIterator: WALKTHROW_TYPE
+        MatrixIterator: +__init__(Matrix)
+        MatrixIterator: +__iter__()
+        MatrixIterator: +__next__()
+```
