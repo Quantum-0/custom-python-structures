@@ -11,13 +11,13 @@ class NumericMatrix(Matrix[_MVT]):
     _values: List[List[_MVT]]
 
     @classmethod
-    def zero_matrix(cls, size: Union[int, Tuple[int, int]]) -> Self:
+    def zero_matrix(cls, size: Union[int, Tuple[int, int]]) -> Matrix[int]:
         if isinstance(size, int):
-            return cls.generate(width=size, height=size, value=0)
-        return cls.generate(width=size[0], height=size[1], value=0)
+            return NumericMatrix(width=size, height=size, values=[list([0] * size)] * size)
+        return NumericMatrix(width=size[0], height=size[1], values=[list([0] * size[0])] * size[1])
 
     @classmethod
-    def identity(cls, size: int) -> Self:
+    def identity(cls, size: int) -> Matrix[int]:
         return cls.generate(width=size, height=size, value=lambda x, y: 1 if x == y else 0)
 
     @property
@@ -56,30 +56,30 @@ class NumericMatrix(Matrix[_MVT]):
         #     determinant += ((-1) ** c) * self._values[0][c] * self.determinant(self._minor(0, c))
         # return determinant
 
-    def __invert__(self) -> Self:
+    def __invert__(self) -> NumericMatrix[float]:
         det = self.determinant
         if self.width > 2:
             raise NotImplementedError("Inverse matrix for > 2x2 is not supported yet")
-        return self.from_nested_list(
+        return NumericMatrix(width=2, height=2, values=
             [
                 [self._values[1][1] / det, -1 * self._values[0][1] / det],
                 [-1 * self._values[1][0] / det, self._values[0][0] / det],
             ]
         )
 
-    def __add__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
+    def __add__(self, other: Matrix[_MVT]) -> NumericMatrix[_MVT]:
         return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x + y)
 
-    def __iadd__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
+    def __iadd__(self, other: Matrix[_MVT]) -> NumericMatrix[_MVT]:
         return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x + y)
 
-    def __sub__(self, other: Matrix) -> Matrix[_MVT]:
+    def __sub__(self, other: Matrix) -> NumericMatrix[_MVT]:
         return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x - y)
 
-    def __isub__(self, other: Matrix) -> Matrix[_MVT]:
+    def __isub__(self, other: Matrix) -> NumericMatrix[_MVT]:
         return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x - y)
 
-    def __itruediv__(self, other: Union[int, float]) -> Matrix[_MVT]:
+    def __itruediv__(self, other: Union[int, float]) -> NumericMatrix[_MVT]:
         if not isinstance(other, (int, float, complex)):
             raise AttributeError()
 
@@ -110,9 +110,9 @@ class NumericMatrix(Matrix[_MVT]):
 
         return self
 
-    def __mul__(self, other: Union[NumericMatrix, int, float]) -> Self:
+    def __mul__(self, other: Union[NumericMatrix, int, float]) -> NumericMatrix[_MVT]:
         if isinstance(other, (int, float, complex)):
-            return self.__class__.from_nested_list([[elem * other for elem in row] for row in self._values])
+            return NumericMatrix.from_nested_list([[elem * other for elem in row] for row in self._values])
 
         if not isinstance(other, Matrix):
             raise AttributeError()
@@ -128,7 +128,7 @@ class NumericMatrix(Matrix[_MVT]):
             new_values.append(row)
         return self.__class__(self.width, other.width, new_values)
 
-    def __neg__(self) -> Self:
+    def __neg__(self) -> NumericMatrix[_MVT]:
         return NumericMatrix(
             width=self.width,
             height=self.height,

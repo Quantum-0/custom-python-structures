@@ -11,8 +11,8 @@ class BitMatrix(Matrix[bool]):
     @classmethod
     def zero_matrix(cls, size: Union[int, Tuple[int, int]]) -> BitMatrix:
         if isinstance(size, int):
-            return cls.generate(width=size, height=size, value=False)
-        return cls.generate(width=size[0], height=size[1], value=False)
+            return BitMatrix(width=size, height=size, values=[list([False] * size)] * size)
+        return BitMatrix(width=size[0], height=size[1], values=[list([False] * size[0])] * size[1])
 
     @classmethod
     def identity(cls, size: int) -> BitMatrix:
@@ -41,15 +41,15 @@ class BitMatrix(Matrix[bool]):
     def __ixor__(self, other: Matrix[bool]) -> Matrix:
         return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x ^ y)
 
-    def __neg__(self) -> Self:
+    def __neg__(self) -> BitMatrix:
         return BitMatrix(
             width=self.width,
             height=self.height,
             values=[[not self._values[j][i] for i in range(self.width)] for j in range(self.height)],
         )
 
-    def __sub__(self, other: Matrix) -> Self:
+    def __sub__(self, other: Matrix) -> BitMatrix:
         return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x and not y)
 
-    def __isub__(self, other: Matrix) -> Self:
-        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x and not y)
+    def __isub__(self, other: Matrix) -> BitMatrix:
+        return self.__base_binary_operation_applying_to_self__(other, lambda x, y: x and not y)  # type: ignore

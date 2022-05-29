@@ -6,8 +6,8 @@ from typing import List, Type, ClassVar, Union
 from src.matrix.matrix import Matrix, _MVT
 
 
-class MatrixIterator(Iterable[_MVT], ABC):
-    WALKTHROW_TYPE: ClassVar[Matrix.Walkthrow] = None
+class MatrixIterator(Iterable, ABC):
+    WALKTHROW_TYPE: ClassVar[Matrix.Walkthrow]
 
     @classmethod
     def iterate(cls, matrix: Matrix, iteration_type: Matrix.Walkthrow):
