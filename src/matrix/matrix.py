@@ -246,7 +246,7 @@ class Matrix(Generic[_MVT]):
             width=self.width,
             height=self.height,
             values=[
-                # pylist: disable=invalid-name
+                # pylist: disable=protected-access
                 [operation(self._values[j][i], other._values[j][i]) for i in range(self.width)]
                 for j in range(self.height)
             ],
@@ -266,6 +266,6 @@ class Matrix(Generic[_MVT]):
             raise AttributeError("Invalid matrix size")
         for i in range(self.width):
             for j in range(self.height):
-                # pylist: disable=invalid-name
+                # pylist: disable=protected-access
                 self._values[j][i] = operation(self._values[j][i], other._values[j][i])
         return self
