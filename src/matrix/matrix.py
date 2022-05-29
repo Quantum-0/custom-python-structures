@@ -231,10 +231,9 @@ class Matrix(Generic[_MVT]):
 
     def __base_binary_operation_creating_new_entity__(
         self,
-        other: Matrix[_MVT] = None,
-        operation: Callable[[_MVT, _MVT], _MVT] = None,
+        other: Matrix[_MVT],
+        operation: Callable[[_MVT, _MVT], _MVT],
     ):
-        # pylist: disable=protected-access
         # Check if operation is defined
         assert operation is not None
         # Check argument
@@ -247,6 +246,7 @@ class Matrix(Generic[_MVT]):
             width=self.width,
             height=self.height,
             values=[
+                # type: ignore # pylint: disable=protected-access
                 [operation(self._values[j][i], other._values[j][i]) for i in range(self.width)]
                 for j in range(self.height)
             ],
@@ -254,10 +254,9 @@ class Matrix(Generic[_MVT]):
 
     def __base_binary_operation_applying_to_self__(
         self,
-        other: Matrix[_MVT] = None,
-        operation: Callable[[_MVT, _MVT], _MVT] = None,
+        other: Matrix[_MVT],
+        operation: Callable[[_MVT, _MVT], _MVT],
     ):
-        # pylist: disable=protected-access
         # Check if operation is defined
         assert operation is not None
         # Check argument
@@ -267,5 +266,6 @@ class Matrix(Generic[_MVT]):
             raise AttributeError("Invalid matrix size")
         for i in range(self.width):
             for j in range(self.height):
+                # type: ignore # pylint: disable=protected-access
                 self._values[j][i] = operation(self._values[j][i], other._values[j][i])
         return self
