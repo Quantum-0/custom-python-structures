@@ -11,9 +11,9 @@ jobs:
     - uses: rickstaa/action-black@v1
       id: action_black
       with:
-        black_args: ". --verbose --line-length=120"
-    - name: Annotate diffs
-      if: steps.action_black.outputs.is_formatted == 'true'
-      uses: reviewdog/action-suggester@v1
-      with:
-        tool_name: blackfmt
+        black_args: ". --check --verbose --line-length=120"
+#    - name: Annotate diffs
+#      if: steps.action_black.outputs.is_formatted == 'true'
+#      uses: reviewdog/action-suggester@v1
+#      with:
+#        tool_name: blackfmt
