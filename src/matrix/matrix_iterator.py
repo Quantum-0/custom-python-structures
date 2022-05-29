@@ -1,13 +1,13 @@
 from __future__ import annotations
 from abc import ABC
 from collections.abc import Iterable
-from typing import List, Type
+from typing import List, Type, ClassVar
 
 from src.matrix.matrix import Matrix, _MVT
 
 
 class MatrixIterator(Iterable[_MVT], ABC):
-    _WALKTHROW_TYPE = None
+    WALKTHROW_TYPE: ClassVar[Matrix.Walkthrow] = None
 
     @classmethod
     def iterate(cls, matrix: Matrix, iteration_type: Matrix.Walkthrow):
@@ -29,14 +29,14 @@ class MatrixIterator(Iterable[_MVT], ABC):
 
     @classmethod
     def _get_iterator_type(cls, walkthrow_type: Matrix.Walkthrow) -> Type[MatrixIterator[_MVT]]:
-        found = [iterator for iterator in cls.__subclasses__() if iterator._WALKTHROW_TYPE == walkthrow_type]
+        found = [iterator for iterator in cls.__subclasses__() if iterator.WALKTHROW_TYPE == walkthrow_type]
         assert len(found) < 2, f"Duplicate implementation for iterator {walkthrow_type}: {found}"
         assert len(found) == 1, f"Cannot find implementation for iterator {walkthrow_type}"
         return found[0]
 
 
 class DefaultMatrixIterator(MatrixIterator):
-    _WALKTHROW_TYPE = Matrix.Walkthrow.DEFAULT
+    WALKTHROW_TYPE = Matrix.Walkthrow.DEFAULT
 
     def __next__(self) -> _MVT:
         if self._ptr < self._len:
@@ -46,10 +46,7 @@ class DefaultMatrixIterator(MatrixIterator):
 
 
 class ResersedMatrixIterator(MatrixIterator):
-    _WALKTHROW_TYPE = Matrix.Walkthrow.REVERSED
-
-    def __init__(self, matrix: Matrix):
-        super().__init__(matrix)
+    WALKTHROW_TYPE = Matrix.Walkthrow.REVERSED
 
     def __next__(self) -> _MVT:
         if self._ptr < self._len:
@@ -62,10 +59,7 @@ class ResersedMatrixIterator(MatrixIterator):
 
 
 class SnakeMatrixIterator(MatrixIterator):
-    _WALKTHROW_TYPE = Matrix.Walkthrow.SNAKE
-
-    def __init__(self, matrix: Matrix):
-        super().__init__(matrix)
+    WALKTHROW_TYPE = Matrix.Walkthrow.SNAKE
 
     def __next__(self) -> _MVT:
         if self._ptr < self._len:
@@ -78,14 +72,14 @@ class SnakeMatrixIterator(MatrixIterator):
 
 
 class SpiralMatrixIterator(MatrixIterator):
-    _WALKTHROW_TYPE = Matrix.Walkthrow.SPIRAL
+    WALKTHROW_TYPE = Matrix.Walkthrow.SPIRAL
 
     def __next__(self) -> _MVT:
         raise NotImplementedError
 
 
 class RowMatrixIterator(MatrixIterator):
-    _WALKTHROW_TYPE = Matrix.Walkthrow.ROWS
+    WALKTHROW_TYPE = Matrix.Walkthrow.ROWS
 
     def __next__(self) -> List[_MVT]:
         if self._ptr >= self._matrix.height:
@@ -96,7 +90,7 @@ class RowMatrixIterator(MatrixIterator):
 
 
 class ColumnMatrixIterator(MatrixIterator):
-    _WALKTHROW_TYPE = Matrix.Walkthrow.COLUMNS
+    WALKTHROW_TYPE = Matrix.Walkthrow.COLUMNS
 
     def __next__(self) -> List[_MVT]:
         if self._ptr == self._matrix.width:

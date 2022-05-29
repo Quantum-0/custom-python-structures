@@ -90,7 +90,6 @@ class Matrix(Generic[_MVT]):
     def __repr__(self):
         return f"<{self.__class__.__name__}({self._values})>"
 
-    # TODO:
     class Walkthrow(Enum):
         DEFAULT = 0
         REVERSED = 1
@@ -203,8 +202,7 @@ class Matrix(Generic[_MVT]):
     def __eq__(self, other: Union[List[List[_MVT]], Matrix[_MVT]]) -> bool:
         if isinstance(other, Matrix):
             return self.size == other.size and self._values == other._values
-        else:
-            return self._values == other
+        return self._values == other
 
     def __ne__(self, other: Union[List[List[_MVT]], Matrix[_MVT]]) -> bool:
         return not self.__eq__(other)
