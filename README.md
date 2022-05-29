@@ -112,7 +112,7 @@ classDiagram
 # Creating examples
 m1 = NumericMatrix.from_joined_lists(3, values=range(9))
 m2 = Matrix(2, 2, [['A', 'B'], ['C', 'D']])
-m3 = Matrix.zero_matrix(size=4)
+m3 = NumericMatrix.zero_matrix(size=4)
 m4 = BitMatrix.from_lists([True, False], [False, True])
 
 # Comparing
