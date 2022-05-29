@@ -20,7 +20,7 @@ class BitMatrix(Matrix[bool]):
 
     def __eq__(self, other: Union[List[List[Any]], BitMatrix, bool]) -> bool:
         if isinstance(other, bool):
-            return all([all([elem is other for elem in row]) for row in self._values])
+            return all(all(elem is other for elem in row) for row in self._values)
         return super().__eq__(other)
 
     def __and__(self, other: Matrix[bool]) -> Matrix:

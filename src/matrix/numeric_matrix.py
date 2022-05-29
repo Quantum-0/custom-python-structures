@@ -56,15 +56,14 @@ class NumericMatrix(Matrix[_MVT]):
 
     def __invert__(self):
         det = self.determinant
-        if self.width == 2:
-            return Matrix.from_nested_list(
-                [
-                    [self._values[1][1] / det, -1 * self._values[0][1] / det],
-                    [-1 * self._values[1][0] / det, self._values[0][0] / det],
-                ]
-            )
-        else:
+        if self.width > 2:
             raise NotImplementedError("Inverse matrix for > 2x2 is not supported yet")
+        return Matrix.from_nested_list(
+            [
+                [self._values[1][1] / det, -1 * self._values[0][1] / det],
+                [-1 * self._values[1][0] / det, self._values[0][0] / det],
+            ]
+        )
 
     def __add__(self, other: Matrix[_MVT]) -> Matrix[_MVT]:
         return self.__base_binary_operation_creating_new_entity__(other, lambda x, y: x + y)

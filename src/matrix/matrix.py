@@ -162,7 +162,7 @@ class Matrix(Generic[_MVT]):
         cls,
         height: Optional[int] = None,
         width: Optional[int] = None,
-        postprocess: Callable[[str]:_MVT] = lambda x: int(x),
+        postprocess: Callable[[str]:_MVT] = int,
         *,
         width_first: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
