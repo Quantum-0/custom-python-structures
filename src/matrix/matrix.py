@@ -210,7 +210,7 @@ class Matrix(Generic[_MVT]):
         return self.__class__(
             self._height,
             self._width,
-            [[self._values[j][i] for j in range(self.height)] for i in range(self.width - 1, -1, -1)],
+            [[self._values[j][i] for j in range(self._height)] for i in range(self._width - 1, -1, -1)],
         )
 
     @property
@@ -218,16 +218,16 @@ class Matrix(Generic[_MVT]):
         return self.__class__(
             self._height,
             self._width,
-            [[self._values[j][i] for j in range(self.height - 1, -1, -1)] for i in range(0, self.width)],
+            [[self._values[j][i] for j in range(self._height - 1, -1, -1)] for i in range(0, self._width)],
         )
 
     @property
     def mirrored_horizontaly(self) -> Matrix:
-        return self.__class__(self._width, self.height, [row[::-1] for row in self._values])
+        return self.__class__(self._width, self._height, [row[::-1] for row in self._values])
 
     @property
     def mirrored_verticaly(self) -> Matrix:
-        return self.__class__(self._width, self.height, [row[::] for row in self._values[::-1]])
+        return self.__class__(self._width, self._height, [row[::] for row in self._values[::-1]])
 
     def __base_binary_operation_creating_new_entity__(
         self,
@@ -246,6 +246,7 @@ class Matrix(Generic[_MVT]):
             width=self.width,
             height=self.height,
             values=[
+                # pylist: disable=invalid-name
                 [operation(self._values[j][i], other._values[j][i]) for i in range(self.width)]
                 for j in range(self.height)
             ],
@@ -265,5 +266,6 @@ class Matrix(Generic[_MVT]):
             raise AttributeError("Invalid matrix size")
         for i in range(self.width):
             for j in range(self.height):
+                # pylist: disable=invalid-name
                 self._values[j][i] = operation(self._values[j][i], other._values[j][i])
         return self

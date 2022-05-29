@@ -34,6 +34,7 @@ class NumericMatrix(Matrix[_MVT]):
 
     @property
     def determinant(self) -> float:
+        # pylint: disable=invalid-name
         # if not self.is_square:
         #     raise NotSquareMatrix()
         matrix = [row[:] for row in self._values]

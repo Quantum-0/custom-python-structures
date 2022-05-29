@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC
 from collections.abc import Iterable
-from typing import List, Type, ClassVar, Union
+from typing import Type, ClassVar
 
 from src.matrix.matrix import Matrix, _MVT
 
