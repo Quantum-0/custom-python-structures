@@ -27,3 +27,21 @@ class Operation(unittest.TestCase):
         fract2 = Fraction(1, 4)
 
         assert fract1 + fract2 == Fraction(3, 4)
+
+    def test4(self):
+        fract1 = Fraction(3, 6)
+        fract2 = Fraction(1, 4)
+
+        assert fract1 - fract2 == Fraction(1, 4)
+
+    def test5(self):
+        fract1 = Fraction(3, 6)
+        fract2 = Fraction(1, 4)
+
+        assert fract1 * fract2 == Fraction(1, 8)
+
+    def test6(self):
+        fract1 = Fraction(1, 4)
+        fract2 = Fraction(1, 2)
+
+        assert fract1 / fract2 == Fraction(1, 2)
