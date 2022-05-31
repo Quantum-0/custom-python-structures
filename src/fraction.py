@@ -1,5 +1,6 @@
 from __future__ import annotations
 from math import gcd
+from typing import Union
 
 
 class Fraction:
@@ -19,32 +20,89 @@ class Fraction:
             self._numerator = -self._numerator
             self._denominator = -self._denominator
 
-    def __eq__(self, other: Fraction):
-        return self._numerator == other._numerator and self._denominator == other._denominator
+    def __eq__(self, other: Union[Fraction, int, float]) -> bool:
 
-    def __add__(self, other: Fraction):
-        res_num = self._numerator * other._denominator + other._numerator * self._denominator
-        res_den = self._denominator * other._denominator
-        res = Fraction(res_num, res_den)
-        return res
+        if isinstance(other, Fraction):
+            return self._numerator == other._numerator and self._denominator == other._denominator
 
-    def __sub__(self, other: Fraction):
-        res_num = self._numerator * other._denominator - other._numerator * self._denominator
-        res_den = self._denominator * other._denominator
-        res = Fraction(res_num, res_den)
-        return res
+        if isinstance(other, (int, float)):
+            return self._numerator / self._denominator == other
 
-    def __mul__(self, other: Fraction):
-        res_num = self._numerator * other._numerator
-        res_den = self._denominator * other._denominator
-        res = Fraction(res_num, res_den)
-        return res
+        raise TypeError
 
-    def __truediv__(self, other: Fraction):
-        res_num = self._numerator * other._denominator
-        res_den = self._denominator * other._numerator
-        res = Fraction(res_num, res_den)
-        return res
+    def __neg__(self):
+        return Fraction(-self._numerator, self._denominator)
+
+    def __add__(self, other: Union[Fraction, int]) -> Fraction:
+
+        if isinstance(other, Fraction):
+            return Fraction(
+                self._numerator * other._denominator + other._numerator * self._denominator,
+                self._denominator * other._denominator
+            )
+
+        if isinstance(other, int):
+            return Fraction(
+                self._numerator + other * self._denominator,
+                self._denominator
+            )
+
+        raise TypeError
+
+    def __radd__(self, other: Union[Fraction, int]) -> Fraction:
+        return self.__add__(other)
+
+    def __sub__(self, other: Union[Fraction, int]) -> Fraction:
+
+        if isinstance(other, Fraction):
+            return Fraction(
+                self._numerator * other._denominator - other._numerator * self._denominator,
+                self._denominator * other._denominator
+            )
+
+        if isinstance(other, int):
+            return Fraction(
+                self._numerator - other * self._denominator,
+                self._denominator
+            )
+
+        raise TypeError
+
+    def __rsub__(self, other: Union[Fraction, int]) -> Fraction:
+        return -self.__sub__(other)
+
+    def __mul__(self, other: Union[Fraction, int]) -> Fraction:
+
+        if isinstance(other, Fraction):
+            return Fraction(self._numerator * other._numerator, self._denominator * other._denominator)
+
+        if isinstance(other, int):
+            return Fraction(self._numerator * other, self._denominator)
+
+        raise TypeError
+
+    def __rmul__(self, other: Union[Fraction, int]) -> Fraction:
+        return self.__mul__(other)
+
+    def __truediv__(self, other: Union[Fraction, int]) -> Fraction:
+
+        if isinstance(other, Fraction):
+            return Fraction(self._numerator * other._denominator, self._denominator * other._numerator)
+
+        if isinstance(other, int):
+            return Fraction(self._numerator, self._denominator * other)
+
+        raise TypeError
+
+    def __rtruediv__(self, other: Union[Fraction, int]) -> Fraction:
+
+        if isinstance(other, Fraction):
+            return Fraction(self._denominator * other._numerator, self._numerator * other._denominator)
+
+        if isinstance(other, int):
+            return Fraction(self._denominator * other, self._numerator)
+
+        raise TypeError
 
     def __repr__(self):
         return f"{self._numerator}/{self._denominator}"
