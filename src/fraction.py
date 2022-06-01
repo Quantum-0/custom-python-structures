@@ -33,6 +33,23 @@ class Fraction:
     def __neg__(self):
         return Fraction(-self._numerator, self._denominator)
 
+    def __lt__(self, other: Union[Fraction, int, float]) -> bool:
+
+        if isinstance(other, Fraction):
+            return self._numerator * other._denominator < other._numerator * self._denominator
+
+        if isinstance(other, (int, float)):
+            return self._numerator / self._denominator < other
+
+    def __le__(self, other: Union[Fraction, int, float]) -> bool:
+        return self.__eq__(other) or self.__lt__(other)
+
+    def __gt__(self, other: Union[Fraction, int, float]) -> bool:
+        return not self.__le__(other)
+
+    def __ge__(self, other: Union[Fraction, int, float]) -> bool:
+        return not self.__lt__(other)
+
     def __add__(self, other: Union[Fraction, int]) -> Fraction:
 
         if isinstance(other, Fraction):
