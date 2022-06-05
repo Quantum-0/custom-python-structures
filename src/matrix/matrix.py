@@ -213,14 +213,17 @@ class Matrix(Generic[_MVT]):
         cls,
         height: Optional[int] = None,
         width: Optional[int] = None,
-        postprocess: Callable[[str], _MVT] = None,  # noqa
+        postprocess: Union[Callable[[str], _MVT], Callable[[str], List[_MVT]]] = None,  # noqa
         *,
         width_first: bool = False,
         by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix:  # pragma: no cover
         if postprocess is None:
-            postprocess = int.__call__ if not by_rows else lambda x: list(map(int, x.split()))
+            if by_rows:
+                postprocess = lambda x: list(map(int, x.split()))
+            else:
+                postprocess = int.__call__
         assert postprocess is not None
         if width_first:
             height = height or int(input())
