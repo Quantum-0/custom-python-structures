@@ -221,7 +221,7 @@ class Matrix(Generic[_MVT]):
 
     @staticmethod
     def __postprocess_input_matrix_by_rows(input_str: str) -> List[_MVT]:
-        return list(map(int, input_str.split()))
+        return list(map(int.__call__, input_str.split()))
 
     @classmethod
     def input_matrix(
