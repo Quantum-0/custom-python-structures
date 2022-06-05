@@ -219,6 +219,10 @@ class Matrix(Generic[_MVT]):
     def from_lists(cls, *lists: List[_MVT]) -> Matrix:
         return cls.from_nested_list(values=list(lists))
 
+    @staticmethod
+    def __postprocess_input_matrix_by_rows(input_str: str) -> List[int]:
+        return list(map(int, input_str.split()))
+
     @classmethod
     def input_matrix(
         cls,
@@ -232,8 +236,7 @@ class Matrix(Generic[_MVT]):
     ) -> Matrix:  # pragma: no cover
         if postprocess is None:
             if by_rows:
-                def postprocess(input_str: str) -> List[int]:
-                    return list(map(int, input_str.split()))
+                postprocess = cls.__postprocess_input_matrix_by_rows
             else:
                 postprocess = int.__call__
         assert postprocess is not None
