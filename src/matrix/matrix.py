@@ -183,8 +183,10 @@ class Matrix(Generic[_MVT]):
                         raise ValueError("Incorrect number of arguments for generator")
                 elif isinstance(value, Iterator):
                     row = list(next(value))
-                else:
+                elif isinstance(value, list):
                     row = list(value)
+                else:
+                    raise ValueError
             values.append(row)
         return cls(width=width, height=height, values=values)
 
