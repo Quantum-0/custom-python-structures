@@ -137,7 +137,14 @@ class Matrix(Generic[_MVT]):
         cls,
         width,
         height,
-        value: Union[Callable[[int, int], _MVT], Callable[[int], _MVT], Callable[[], _MVT], _MVT, Iterator],
+        value: Union[
+            Callable[[int, int], _MVT],
+            Callable[[int], List[_MVT]],
+            Callable[[], _MVT],
+            Callable[[], List[_MVT]],
+            _MVT,
+            Iterator,
+        ],
         *,
         by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,  # type: ignore # pylint: disable=W0613 # TODO
