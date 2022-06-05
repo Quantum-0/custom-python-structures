@@ -188,7 +188,7 @@ class Matrix(Generic[_MVT]):
                 else:
                     raise ValueError
             values.append(row)
-        return cls(width=width, height=height, values=values)
+        return cls(width=width, height=height, values=values)  # type: ignore
 
     @classmethod
     def from_nested_list(cls, values: List[List[_MVT]]) -> Matrix[_MVT]:
@@ -232,7 +232,8 @@ class Matrix(Generic[_MVT]):
     ) -> Matrix:  # pragma: no cover
         if postprocess is None:
             if by_rows:
-                postprocess = lambda x: list(map(int, x.split()))
+                def postprocess(input_str: str) -> List[int]:
+                    return list(map(int, input_str.split()))
             else:
                 postprocess = int.__call__
         assert postprocess is not None
@@ -244,6 +245,7 @@ class Matrix(Generic[_MVT]):
             height = height or int(input())
         assert isinstance(width, int)
         assert isinstance(height, int)
+        # type: ignore
         return cls.generate(width, height, lambda: postprocess(input()), by_rows=by_rows, walkthrow=walkthrow)
 
     def transpose(self) -> None:
