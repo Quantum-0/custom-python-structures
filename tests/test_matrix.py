@@ -258,8 +258,9 @@ class Slicing(unittest.TestCase):
     def test_index_error(self):
         def set_val(index, value):
             self.m[index] = value
-        self.assertRaises(NotImplementedError, lambda: set_val((slice(None, None, -1), 1), [1,2,3]))
-        self.assertRaises(NotImplementedError, lambda: set_val((slice(1, 2), slice(None, None, 2)), [1,2,3]))
+
+        self.assertRaises(NotImplementedError, lambda: set_val((slice(None, None, -1), 1), [1, 2, 3]))
+        self.assertRaises(NotImplementedError, lambda: set_val((slice(1, 2), slice(None, None, 2)), [1, 2, 3]))
         self.assertRaises(ValueError, lambda: set_val((1, slice(1, 2)), 123))
         self.assertRaises(ValueError, lambda: set_val((slice(1, 2), 2), 123))
         self.assertRaises(ValueError, lambda: set_val((1, slice(1, 3)), [1, 2, 3]))
