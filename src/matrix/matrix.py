@@ -47,6 +47,7 @@ class Matrix(Generic[_MVT]):
         key: _MKT,
         value: _MVT,
     ) -> None:
+        # pylint: disable=R0912
         # Type Check
         if not isinstance(key, tuple):
             raise IndexError("Index must be tuple")
@@ -149,6 +150,7 @@ class Matrix(Generic[_MVT]):
         by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,  # type: ignore # pylint: disable=W0613 # TODO
     ):
+        # pylint: disable=R0912
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
         if not isinstance(width, int) or not isinstance(height, int):
             raise TypeError
