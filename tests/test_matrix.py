@@ -127,6 +127,21 @@ class Generation(unittest.TestCase):
         m = NumericMatrix.from_joined_lists(3, values=range(9))
         assert m == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
 
+        m = NumericMatrix.generate(3, 3, [1, 2, 3], by_rows=True)
+        assert m == [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+        m = NumericMatrix.generate(3, 4, lambda row_id: [row_id, row_id * 2, row_id**2], by_rows=True)
+        assert m == [[0, 0, 0], [1, 2, 1], [2, 4, 4], [3, 6, 9]]
+        m = NumericMatrix.generate(3, 2, lambda: list((1, 2, 3)), by_rows=True)
+        assert m == [[1, 2, 3], [1, 2, 3]]
+
+        def range_lists_iterator(count: int, list_len: int):
+            rng = range(count)
+            for element in rng:
+                yield [element] * list_len
+
+        m = NumericMatrix.generate(3, 4, range_lists_iterator(4, 3), by_rows=True)
+        assert m == [[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]]
+
     def test_errors(self):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_lists())
         self.assertRaises(ValueError, lambda: NumericMatrix.from_lists([]))
@@ -137,6 +152,7 @@ class Generation(unittest.TestCase):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[], [], []]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y, z: x + y + z))
+        self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y: x + y, by_rows=True))
         self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix("test"))  # noqa
         self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix((1, 2, 3)))  # noqa
         self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix("test"))  # noqa
@@ -192,8 +208,6 @@ class Indexing(unittest.TestCase):
 
 
 class Slicing(unittest.TestCase):
-    # TODO: Add test setitem
-
     def setUp(self) -> None:
         self.m = NumericMatrix.from_joined_lists(4, values=range(20))
         # 0 1 2 3
@@ -210,10 +224,25 @@ class Slicing(unittest.TestCase):
         assert self.m[0, 1:3] == [4, 8], self.m[0, 1:3]
         assert self.m[2, 2:] == [10, 14, 18]
 
+    def test_set_vertical_slice(self):
+        self.m[1, :] = [1, 2, 3, 4, 5]
+        assert self.m[1, :] == [1, 2, 3, 4, 5]
+        assert self.m[0:3, :] == [[0, 1, 2], [4, 2, 6], [8, 3, 10], [12, 4, 14], [16, 5, 18]]
+        self.m[2, 1:3] = [0, 0]
+        assert self.m[2, 1:3] == [0, 0]
+        assert self.m[0:3, :] == [[0, 1, 2], [4, 2, 0], [8, 3, 0], [12, 4, 14], [16, 5, 18]]
+
     def test_horizontal_slice(self):
-        assert self.m[:, 1] == [4, 5, 6, 7], self.m[:, 1]
-        assert self.m[1:3, 0] == [1, 2], self.m[1:3, 0]
+        assert self.m[:, 1] == [4, 5, 6, 7]
+        assert self.m[1:3, 0] == [1, 2]
         assert self.m[2:, 2] == [10, 11]
+
+    def test_set_horizontal_slice(self):
+        self.m[:, 1] = [-1] * 4
+        assert self.m[:, 1] == [-1] * 4
+        assert self.m[0:3, :] == [[0, 1, 2], [-1, -1, -1], [8, 9, 10], [12, 13, 14], [16, 17, 18]]
+        self.m[2:, 2] = [-5, 5]
+        assert self.m[0:, :] == [[0, 1, 2, 3], [-1, -1, -1, -1], [8, 9, -5, 5], [12, 13, 14, 15], [16, 17, 18, 19]]
 
     def test_both_slice(self):
         assert self.m[:, :] == self.m._values
@@ -221,8 +250,26 @@ class Slicing(unittest.TestCase):
         assert self.m[1:3, 1:4] == [[5, 6], [9, 10], [13, 14]]
         assert self.m[2:, 2:] == [[10, 11], [14, 15], [18, 19]]
 
+    def test_set_both(self):
+        self.m[1:3, 1:4] = [[-1, -2], [-3, -4], [-5, -6]]
+        assert self.m[1:3, 1:4] == [[-1, -2], [-3, -4], [-5, -6]], self.m[1:3, 1:4]
+        assert self.m == [[0, 1, 2, 3], [4, -1, -2, 7], [8, -3, -4, 11], [12, -5, -6, 15], [16, 17, 18, 19]]
+
     def test_index_error(self):
-        pass
+        def set_val(index, value):
+            self.m[index] = value
+
+        self.assertRaises(NotImplementedError, lambda: set_val((slice(None, None, -1), 1), [1, 2, 3]))
+        self.assertRaises(NotImplementedError, lambda: set_val((slice(1, 2), slice(None, None, 2)), [1, 2, 3]))
+        self.assertRaises(ValueError, lambda: set_val((1, slice(1, 2)), 123))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), 2), 123))
+        self.assertRaises(ValueError, lambda: set_val((1, slice(1, 3)), [1, 2, 3]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 3), 2), [1, 2, 3]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), 123))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [1, 2]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [1]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [[1, 2]]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [[1, 2], [1, 2]]))
 
     def test_minor(self):
         assert self.m3.get_minor(0, 0) == Matrix(2, 2, [[4, 5], [7, 8]])
@@ -244,6 +291,7 @@ class Math(unittest.TestCase):
         self.F = NumericMatrix.from_lists([1, 1], [2, 2])
         self.G = NumericMatrix.from_lists([-1, -2], [1, 2])
         self.H = NumericMatrix.from_lists([0, -1], [3, 4])
+        self.I = NumericMatrix.from_lists([1, 3, 5], [2, 4, 6], [0, -1, -2])
 
     def test_mul_to_number(self):
         assert self.E * 3 == [[3, 0, 0], [0, 3, 0], [0, 0, 3]]
@@ -297,7 +345,8 @@ class Math(unittest.TestCase):
         assert NumericMatrix.from_lists([2, 0], [1, 9]) * NumericMatrix.from_lists(
             [3, 9], [4, 7]
         ) == NumericMatrix.from_lists([6, 18], [39, 72])
-        # FIXME:  assert self.C * self.E == self.C
+        assert self.I * self.E == self.I
+        assert self.E * self.I == self.I
         self.assertRaises(AttributeError, lambda: self.E * self.F)
 
     def test_inverse_matrix(self):

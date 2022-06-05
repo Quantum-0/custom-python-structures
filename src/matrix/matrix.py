@@ -47,6 +47,7 @@ class Matrix(Generic[_MVT]):
         key: _MKT,
         value: _MVT,
     ) -> None:
+        # pylint: disable=R0912
         # Type Check
         if not isinstance(key, tuple):
             raise IndexError("Index must be tuple")
@@ -60,10 +61,42 @@ class Matrix(Generic[_MVT]):
         if isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
 
+        # Check and recreate slices
+        if isinstance(key[0], slice):
+            if key[0].step is not None:
+                raise NotImplementedError
+            key = slice(key[0].start or 0, key[0].stop or self._width, None), key[1]
+        if isinstance(key[1], slice):
+            if key[1].step is not None:
+                raise NotImplementedError
+            key = key[0], slice(key[1].start or 0, key[1].stop or self._height, None)
+
         if isinstance(key[0], int) and isinstance(key[1], int):
             self._values[key[1]][key[0]] = value
-        else:
-            raise NotImplementedError()
+        elif isinstance(key[0], slice) and isinstance(key[1], int):
+            if not isinstance(value, list):
+                raise ValueError
+            if key[0].stop - key[0].start != len(value):
+                raise ValueError
+            self._values[key[1]][key[0]] = value
+        elif isinstance(key[0], int) and isinstance(key[1], slice):
+            if not isinstance(value, list):
+                raise ValueError
+            if key[1].stop - key[1].start != len(value):
+                raise ValueError
+            for j, val in zip(range(key[1].start, key[1].stop), value):
+                self._values[j][key[0]] = val
+        elif isinstance(key[0], slice) and isinstance(key[1], slice):
+            if not isinstance(value, list):
+                raise ValueError
+            if not all(isinstance(val, list) for val in value):
+                raise ValueError
+            if key[1].stop - key[1].start != len(value):
+                raise ValueError
+            if not all(len(val) == key[0].stop - key[0].start for val in value):
+                raise ValueError
+            for j, val in zip(range(key[1].start, key[1].stop), value):
+                self._values[j][key[0]] = val
 
     def __contains__(self, item: Union[Matrix[_MVT], List[List[_MVT]]]) -> bool:
         other = Matrix.from_nested_list(item) if isinstance(item, List) else item
@@ -105,10 +138,19 @@ class Matrix(Generic[_MVT]):
         cls,
         width,
         height,
-        value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
+        value: Union[
+            Callable[[int, int], _MVT],
+            Callable[[int], List[_MVT]],
+            Callable[[], _MVT],
+            Callable[[], List[_MVT]],
+            _MVT,
+            Iterator,
+        ],
         *,
+        by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,  # type: ignore # pylint: disable=W0613 # TODO
     ):
+        # pylint: disable=R0912
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
         if not isinstance(width, int) or not isinstance(height, int):
             raise TypeError
@@ -117,21 +159,36 @@ class Matrix(Generic[_MVT]):
 
         values = []
         for j in range(height):
-            row = []
-            for i in range(width):
+            if not by_rows:
+                row = []
+                for i in range(width):
+                    if callable(value):
+                        if value.__code__.co_argcount == 2:  # noqa
+                            row.append(value(i, j))  # type: ignore
+                        elif value.__code__.co_argcount == 0:  # noqa
+                            row.append(value())  # type: ignore
+                        else:
+                            raise ValueError("Incorrect number of arguments for generator")
+                    elif isinstance(value, Iterator):
+                        row.append(next(value))
+                    else:
+                        row.append(value)
+            else:
                 if callable(value):
-                    if value.__code__.co_argcount == 2:  # noqa
-                        row.append(value(i, j))  # type: ignore
+                    if value.__code__.co_argcount == 1:  # noqa
+                        row = list(value(j))  # type: ignore
                     elif value.__code__.co_argcount == 0:  # noqa
-                        row.append(value())  # type: ignore
+                        row = list(value())  # type: ignore
                     else:
                         raise ValueError("Incorrect number of arguments for generator")
                 elif isinstance(value, Iterator):
-                    row.append(next(value))
+                    row = list(next(value))
+                elif isinstance(value, list):
+                    row = list(value)
                 else:
-                    row.append(value)
+                    raise ValueError
             values.append(row)
-        return cls(width=width, height=height, values=values)
+        return cls(width=width, height=height, values=values)  # type: ignore
 
     @classmethod
     def from_nested_list(cls, values: List[List[_MVT]]) -> Matrix[_MVT]:
@@ -162,17 +219,27 @@ class Matrix(Generic[_MVT]):
     def from_lists(cls, *lists: List[_MVT]) -> Matrix:
         return cls.from_nested_list(values=list(lists))
 
+    @staticmethod
+    def __postprocess_input_matrix_by_rows(input_str: str) -> List[_MVT]:
+        return list(map(int.__call__, input_str.split()))
+
     @classmethod
     def input_matrix(
         cls,
         height: Optional[int] = None,
         width: Optional[int] = None,
-        postprocess: Callable[[str], _MVT] = int.__call__,
+        postprocess: Union[Callable[[str], _MVT], Callable[[str], List[_MVT]]] = None,  # noqa
         *,
         width_first: bool = False,
-        # by_rows: bool = False,  # TODO
+        by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix:  # pragma: no cover
+        if postprocess is None:
+            if by_rows:
+                postprocess = cls.__postprocess_input_matrix_by_rows
+            else:
+                postprocess = int.__call__
+        assert postprocess is not None
         if width_first:
             height = height or int(input())
             width = width or int(input())
@@ -181,7 +248,7 @@ class Matrix(Generic[_MVT]):
             height = height or int(input())
         assert isinstance(width, int)
         assert isinstance(height, int)
-        return cls.generate(width, height, lambda: postprocess(input()), walkthrow=walkthrow)
+        return cls.generate(width, height, lambda: postprocess(input()), by_rows=by_rows, walkthrow=walkthrow)  # type: ignore
 
     def transpose(self) -> None:
         self._values = [[self._values[j][i] for j in range(len(self._values))] for i in range(len(self._values[0]))]
