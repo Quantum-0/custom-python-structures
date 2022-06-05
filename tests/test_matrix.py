@@ -256,7 +256,19 @@ class Slicing(unittest.TestCase):
         assert self.m == [[0, 1, 2, 3], [4, -1, -2, 7], [8, -3, -4, 11], [12, -5, -6, 15], [16, 17, 18, 19]]
 
     def test_index_error(self):
-        pass
+        def set_val(index, value):
+            self.m[index] = value
+        self.assertRaises(NotImplementedError, lambda: set_val((slice(None, None, -1), 1), [1,2,3]))
+        self.assertRaises(NotImplementedError, lambda: set_val((slice(1, 2), slice(None, None, 2)), [1,2,3]))
+        self.assertRaises(ValueError, lambda: set_val((1, slice(1, 2)), 123))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), 2), 123))
+        self.assertRaises(ValueError, lambda: set_val((1, slice(1, 3)), [1, 2, 3]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 3), 2), [1, 2, 3]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), 123))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [1, 2]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [1]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [[1, 2]]))
+        self.assertRaises(ValueError, lambda: set_val((slice(1, 2), slice(1, 2)), [[1, 2], [1, 2]]))
 
     def test_minor(self):
         assert self.m3.get_minor(0, 0) == Matrix(2, 2, [[4, 5], [7, 8]])

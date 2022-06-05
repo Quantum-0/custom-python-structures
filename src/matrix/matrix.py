@@ -90,9 +90,9 @@ class Matrix(Generic[_MVT]):
                 raise ValueError
             if not all(isinstance(val, list) for val in value):
                 raise ValueError
-            if not all(len(val) == key[0].stop - key[0].start for val in value):
-                raise ValueError
             if key[1].stop - key[1].start != len(value):
+                raise ValueError
+            if not all(len(val) == key[0].stop - key[0].start for val in value):
                 raise ValueError
             for j, val in zip(range(key[1].start, key[1].stop), value):
                 self._values[j][key[0]] = val
