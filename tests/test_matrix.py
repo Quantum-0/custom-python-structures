@@ -208,8 +208,6 @@ class Indexing(unittest.TestCase):
 
 
 class Slicing(unittest.TestCase):
-    # TODO: Add test setitem
-
     def setUp(self) -> None:
         self.m = NumericMatrix.from_joined_lists(4, values=range(20))
         # 0 1 2 3
@@ -226,16 +224,36 @@ class Slicing(unittest.TestCase):
         assert self.m[0, 1:3] == [4, 8], self.m[0, 1:3]
         assert self.m[2, 2:] == [10, 14, 18]
 
+    def test_set_vertical_slice(self):
+        self.m[1, :] = [1, 2, 3, 4, 5]
+        assert self.m[1, :] == [1, 2, 3, 4, 5]
+        assert self.m[0:3, :] == [[0, 1, 2], [4, 2, 6], [8, 3, 10], [12, 4, 14], [16, 5, 18]]
+        self.m[2, 1:3] = [0, 0]
+        assert self.m[2, 1:3] == [0, 0]
+        assert self.m[0:3, :] == [[0, 1, 2], [4, 2, 0], [8, 3, 0], [12, 4, 14], [16, 5, 18]]
+
     def test_horizontal_slice(self):
-        assert self.m[:, 1] == [4, 5, 6, 7], self.m[:, 1]
-        assert self.m[1:3, 0] == [1, 2], self.m[1:3, 0]
+        assert self.m[:, 1] == [4, 5, 6, 7]
+        assert self.m[1:3, 0] == [1, 2]
         assert self.m[2:, 2] == [10, 11]
+
+    def test_set_horizontal_slice(self):
+        self.m[:, 1] = [-1] * 4
+        assert self.m[:, 1] == [-1] * 4
+        assert self.m[0:3, :] == [[0, 1, 2], [-1, -1, -1], [8, 9, 10], [12, 13, 14], [16, 17, 18]]
+        self.m[2:, 2] = [-5, 5]
+        assert self.m[0:, :] == [[0, 1, 2, 3], [-1, -1, -1, -1], [8, 9, -5, 5], [12, 13, 14, 15], [16, 17, 18, 19]]
 
     def test_both_slice(self):
         assert self.m[:, :] == self.m._values
         assert self.m[0:3, 0:3] == [[0, 1, 2], [4, 5, 6], [8, 9, 10]]
         assert self.m[1:3, 1:4] == [[5, 6], [9, 10], [13, 14]]
         assert self.m[2:, 2:] == [[10, 11], [14, 15], [18, 19]]
+
+    def test_set_both(self):
+        self.m[1:3, 1:4] = [[-1, -2], [-3, -4], [-5, -6]]
+        assert self.m[1:3, 1:4] == [[-1, -2], [-3, -4], [-5, -6]], self.m[1:3, 1:4]
+        assert self.m == [[0, 1, 2, 3], [4, -1, -2, 7], [8, -3, -4, 11], [12, -5, -6, 15], [16, 17, 18, 19]]
 
     def test_index_error(self):
         pass

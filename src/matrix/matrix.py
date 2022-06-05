@@ -60,10 +60,42 @@ class Matrix(Generic[_MVT]):
         if isinstance(key[1], int) and (key[1] < 0 or key[1] >= self._height):
             raise IndexError("Matrix doesn't support negative or overflow indexes")
 
+        # Check and recreate slices
+        if isinstance(key[0], slice):
+            if key[0].step is not None:
+                raise NotImplementedError
+            key = slice(key[0].start or 0, key[0].stop or self._width, None), key[1]
+        if isinstance(key[1], slice):
+            if key[1].step is not None:
+                raise NotImplementedError
+            key = key[0], slice(key[1].start or 0, key[1].stop or self._height, None)
+
         if isinstance(key[0], int) and isinstance(key[1], int):
             self._values[key[1]][key[0]] = value
-        else:
-            raise NotImplementedError()
+        elif isinstance(key[0], slice) and isinstance(key[1], int):
+            if not isinstance(value, list):
+                raise ValueError
+            if key[0].stop - key[0].start != len(value):
+                raise ValueError
+            self._values[key[1]][key[0]] = value
+        elif isinstance(key[0], int) and isinstance(key[1], slice):
+            if not isinstance(value, list):
+                raise ValueError
+            if key[1].stop - key[1].start != len(value):
+                raise ValueError
+            for j, val in zip(range(key[1].start, key[1].stop), value):
+                self._values[j][key[0]] = val
+        elif isinstance(key[0], slice) and isinstance(key[1], slice):
+            if not isinstance(value, list):
+                raise ValueError
+            if not all(isinstance(val, list) for val in value):
+                raise ValueError
+            if not all(len(val) == key[0].stop - key[0].start for val in value):
+                raise ValueError
+            if key[1].stop - key[1].start != len(value):
+                raise ValueError
+            for j, val in zip(range(key[1].start, key[1].stop), value):
+                self._values[j][key[0]] = val
 
     def __contains__(self, item: Union[Matrix[_MVT], List[List[_MVT]]]) -> bool:
         other = Matrix.from_nested_list(item) if isinstance(item, List) else item
