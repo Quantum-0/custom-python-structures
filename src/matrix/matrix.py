@@ -170,7 +170,7 @@ class Matrix(Generic[_MVT]):
         postprocess: Callable[[str], _MVT] = int.__call__,
         *,
         width_first: bool = False,
-        by_rows: bool = False,  # TODO
+        # by_rows: bool = False,  # TODO
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix:  # pragma: no cover
         if width_first:
