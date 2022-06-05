@@ -129,7 +129,7 @@ class Generation(unittest.TestCase):
 
         m = NumericMatrix.generate(3, 3, [1, 2, 3], by_rows=True)
         assert m == [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
-        m = NumericMatrix.generate(3, 4, lambda row_id: [row_id, row_id*2, row_id**2], by_rows=True)
+        m = NumericMatrix.generate(3, 4, lambda row_id: [row_id, row_id * 2, row_id**2], by_rows=True)
         assert m == [[0, 0, 0], [1, 2, 1], [2, 4, 4], [3, 6, 9]]
         m = NumericMatrix.generate(3, 2, lambda: list((1, 2, 3)), by_rows=True)
         assert m == [[1, 2, 3], [1, 2, 3]]
