@@ -12,7 +12,9 @@ class BitMatrix(Matrix[bool]):
     def zero_matrix(cls, size: Union[int, Tuple[int, int]]) -> BitMatrix:
         if isinstance(size, int):
             return BitMatrix(width=size, height=size, values=[list([False] * size)] * size)
-        return BitMatrix(width=size[0], height=size[1], values=[list([False] * size[0])] * size[1])
+        if isinstance(size, tuple) and len(size) == 2 and isinstance(size[0], int) and isinstance(size[1], int):
+            return BitMatrix(width=size[0], height=size[1], values=[list([False] * size[0])] * size[1])
+        raise TypeError
 
     @classmethod
     def identity(cls, size: int) -> BitMatrix:

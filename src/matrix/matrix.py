@@ -110,6 +110,11 @@ class Matrix(Generic[_MVT]):
         walkthrow: Walkthrow = Walkthrow.DEFAULT,  # type: ignore # pylint: disable=W0613 # TODO
     ):
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
+        if not isinstance(width, int) or not isinstance(height, int):
+            raise TypeError
+        if width < 1 or height < 1:
+            raise ValueError
+
         values = []
         for j in range(height):
             row = []
@@ -131,7 +136,7 @@ class Matrix(Generic[_MVT]):
     @classmethod
     def from_nested_list(cls, values: List[List[_MVT]]) -> Matrix[_MVT]:
         if not isinstance(values, list):
-            raise ValueError()
+            raise TypeError
         height = len(values)
         if height == 0:
             raise ValueError("Cannot create matrix from empty list")
@@ -165,6 +170,7 @@ class Matrix(Generic[_MVT]):
         postprocess: Callable[[str], _MVT] = int.__call__,
         *,
         width_first: bool = False,
+        by_rows: bool = False,  # TODO
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix:  # pragma: no cover
         if width_first:
@@ -192,7 +198,11 @@ class Matrix(Generic[_MVT]):
             raise NotSquareMatrix()
         return [self._values[i][i] for i in range(self.width)]
 
-    def get_minor(self, i, j):
+    def get_minor(self, i: int, j: int):
+        if not isinstance(i, int) or not isinstance(j, int):
+            raise TypeError
+        if not (0 <= i < self._width) or not (0 <= j < self._height):
+            raise ValueError
         return Matrix(
             self.width - 1,
             self.height - 1,

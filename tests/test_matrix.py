@@ -133,7 +133,7 @@ class Generation(unittest.TestCase):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_joined_lists(3, values=[1, 2, 3, 4, 5]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_joined_lists(3, 3, values=[1, 2, 3, 4, 5, 6]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([]))
-        self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list("test"))  # noqa
+        self.assertRaises(TypeError, lambda: NumericMatrix.from_nested_list("test"))  # noqa
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[], [], []]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y, z: x + y + z))
