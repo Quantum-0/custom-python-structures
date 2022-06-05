@@ -100,7 +100,7 @@ class NumericMatrix(Matrix[_MVT]):
             for i in range(0, self.width):
                 row = []
                 for j in range(0, other.height):
-                    row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
+                    row.append(sum(self._values[i][k] * other._values[k][j] for k in range(self.height)))
                 new_values.append(row)
             self._values = new_values
             self._height = other.height
@@ -129,7 +129,7 @@ class NumericMatrix(Matrix[_MVT]):
         for i in range(0, self.width):
             row = []
             for j in range(0, other.height):
-                row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
+                row.append(sum(self._values[i][k] * other._values[k][j] for k in range(self.height)))
             new_values.append(row)
         return self.__class__(self.width, other.width, new_values)
 

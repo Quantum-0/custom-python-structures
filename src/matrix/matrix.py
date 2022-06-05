@@ -201,7 +201,7 @@ class Matrix(Generic[_MVT]):
     def get_minor(self, i: int, j: int):
         if not isinstance(i, int) or not isinstance(j, int):
             raise TypeError
-        if not (0 <= i < self._width) or not (0 <= j < self._height):
+        if not 0 <= i < self._width or not 0 <= j < self._height:
             raise ValueError
         return Matrix(
             self.width - 1,
