@@ -220,7 +220,7 @@ class Matrix(Generic[_MVT]):
         return cls.from_nested_list(values=list(lists))
 
     @staticmethod
-    def __postprocess_input_matrix_by_rows(input_str: str) -> List[int]:
+    def __postprocess_input_matrix_by_rows(input_str: str) -> List[_MVT]:
         return list(map(int, input_str.split()))
 
     @classmethod
@@ -248,8 +248,7 @@ class Matrix(Generic[_MVT]):
             height = height or int(input())
         assert isinstance(width, int)
         assert isinstance(height, int)
-        # type: ignore
-        return cls.generate(width, height, lambda: postprocess(input()), by_rows=by_rows, walkthrow=walkthrow)
+        return cls.generate(width, height, lambda: postprocess(input()), by_rows=by_rows, walkthrow=walkthrow)  # type: ignore
 
     def transpose(self) -> None:
         self._values = [[self._values[j][i] for j in range(len(self._values))] for i in range(len(self._values[0]))]
