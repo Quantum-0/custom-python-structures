@@ -105,8 +105,9 @@ class Matrix(Generic[_MVT]):
         cls,
         width,
         height,
-        value: Union[Callable[[int, int], _MVT], Callable[[], _MVT], _MVT, Iterator],
+        value: Union[Callable[[int, int], _MVT], Callable[[int], _MVT], Callable[[], _MVT], _MVT, Iterator],
         *,
+        by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,  # type: ignore # pylint: disable=W0613 # TODO
     ):
         """Generates matrix from size and generator, for example (2, 2, lambda x,y: x+y"""
@@ -117,19 +118,32 @@ class Matrix(Generic[_MVT]):
 
         values = []
         for j in range(height):
-            row = []
-            for i in range(width):
+            if not by_rows:
+                row = []
+                for i in range(width):
+                    if callable(value):
+                        if value.__code__.co_argcount == 2:  # noqa
+                            row.append(value(i, j))  # type: ignore
+                        elif value.__code__.co_argcount == 0:  # noqa
+                            row.append(value())  # type: ignore
+                        else:
+                            raise ValueError("Incorrect number of arguments for generator")
+                    elif isinstance(value, Iterator):
+                        row.append(next(value))
+                    else:
+                        row.append(value)
+            else:
                 if callable(value):
-                    if value.__code__.co_argcount == 2:  # noqa
-                        row.append(value(i, j))  # type: ignore
+                    if value.__code__.co_argcount == 1:  # noqa
+                        row = list(value(j))  # type: ignore
                     elif value.__code__.co_argcount == 0:  # noqa
-                        row.append(value())  # type: ignore
+                        row = list(value())  # type: ignore
                     else:
                         raise ValueError("Incorrect number of arguments for generator")
                 elif isinstance(value, Iterator):
-                    row.append(next(value))
+                    row = list(next(value))
                 else:
-                    row.append(value)
+                    row = list(value)
             values.append(row)
         return cls(width=width, height=height, values=values)
 
@@ -167,12 +181,15 @@ class Matrix(Generic[_MVT]):
         cls,
         height: Optional[int] = None,
         width: Optional[int] = None,
-        postprocess: Callable[[str], _MVT] = int.__call__,
+        postprocess: Callable[[str], _MVT] = None,  # noqa
         *,
         width_first: bool = False,
-        # by_rows: bool = False,  # TODO
+        by_rows: bool = False,
         walkthrow: Walkthrow = Walkthrow.DEFAULT,
     ) -> Matrix:  # pragma: no cover
+        if postprocess is None:
+            postprocess = int.__call__ if not by_rows else lambda x: list(map(int, x.split()))
+        assert postprocess is not None
         if width_first:
             height = height or int(input())
             width = width or int(input())
@@ -181,7 +198,7 @@ class Matrix(Generic[_MVT]):
             height = height or int(input())
         assert isinstance(width, int)
         assert isinstance(height, int)
-        return cls.generate(width, height, lambda: postprocess(input()), walkthrow=walkthrow)
+        return cls.generate(width, height, lambda: postprocess(input()), by_rows=by_rows, walkthrow=walkthrow)
 
     def transpose(self) -> None:
         self._values = [[self._values[j][i] for j in range(len(self._values))] for i in range(len(self._values[0]))]

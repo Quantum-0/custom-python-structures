@@ -127,6 +127,21 @@ class Generation(unittest.TestCase):
         m = NumericMatrix.from_joined_lists(3, values=range(9))
         assert m == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
 
+        m = NumericMatrix.generate(3, 3, [1, 2, 3], by_rows=True)
+        assert m == [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+        m = NumericMatrix.generate(3, 4, lambda row_id: [row_id, row_id*2, row_id**2], by_rows=True)
+        assert m == [[0, 0, 0], [1, 2, 1], [2, 4, 4], [3, 6, 9]]
+        m = NumericMatrix.generate(3, 2, lambda: list((1, 2, 3)), by_rows=True)
+        assert m == [[1, 2, 3], [1, 2, 3]]
+
+        def range_lists_iterator(count: int, list_len: int):
+            rng = range(count)
+            for element in rng:
+                yield [element] * list_len
+
+        m = NumericMatrix.generate(3, 4, range_lists_iterator(4, 3), by_rows=True)
+        assert m == [[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]]
+
     def test_errors(self):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_lists())
         self.assertRaises(ValueError, lambda: NumericMatrix.from_lists([]))
@@ -137,6 +152,7 @@ class Generation(unittest.TestCase):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[], [], []]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y, z: x + y + z))
+        self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y: x + y, by_rows=True))
         self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix("test"))  # noqa
         self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix((1, 2, 3)))  # noqa
         self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix("test"))  # noqa
