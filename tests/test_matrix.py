@@ -260,6 +260,7 @@ class Math(unittest.TestCase):
         self.F = NumericMatrix.from_lists([1, 1], [2, 2])
         self.G = NumericMatrix.from_lists([-1, -2], [1, 2])
         self.H = NumericMatrix.from_lists([0, -1], [3, 4])
+        self.I = NumericMatrix.from_lists([1, 3, 5], [2, 4, 6], [0, -1, -2])
 
     def test_mul_to_number(self):
         assert self.E * 3 == [[3, 0, 0], [0, 3, 0], [0, 0, 3]]
@@ -313,7 +314,8 @@ class Math(unittest.TestCase):
         assert NumericMatrix.from_lists([2, 0], [1, 9]) * NumericMatrix.from_lists(
             [3, 9], [4, 7]
         ) == NumericMatrix.from_lists([6, 18], [39, 72])
-        # FIXME:  assert self.C * self.E == self.C
+        assert self.I * self.E == self.I
+        assert self.E * self.I == self.I
         self.assertRaises(AttributeError, lambda: self.E * self.F)
 
     def test_inverse_matrix(self):
