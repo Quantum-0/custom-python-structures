@@ -14,7 +14,9 @@ class NumericMatrix(Matrix[_MVT]):
     def zero_matrix(cls, size: Union[int, Tuple[int, int]]) -> Matrix[int]:
         if isinstance(size, int):
             return NumericMatrix(width=size, height=size, values=[list([0] * size)] * size)
-        return NumericMatrix(width=size[0], height=size[1], values=[list([0] * size[0])] * size[1])
+        if isinstance(size, tuple) and len(size) == 2 and isinstance(size[0], int) and isinstance(size[1], int):
+            return NumericMatrix(width=size[0], height=size[1], values=[list([0] * size[0])] * size[1])
+        raise TypeError
 
     @classmethod
     def identity(cls, size: int) -> Matrix[int]:
@@ -98,7 +100,7 @@ class NumericMatrix(Matrix[_MVT]):
             for i in range(0, self.width):
                 row = []
                 for j in range(0, other.height):
-                    row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
+                    row.append(sum(self._values[i][k] * other._values[k][j] for k in range(self.height)))
                 new_values.append(row)
             self._values = new_values
             self._height = other.height
@@ -127,7 +129,7 @@ class NumericMatrix(Matrix[_MVT]):
         for i in range(0, self.width):
             row = []
             for j in range(0, other.height):
-                row.append(sum([self._values[i][k] * other._values[k][j] for k in range(self.height)]))
+                row.append(sum(self._values[i][k] * other._values[k][j] for k in range(self.height)))
             new_values.append(row)
         return self.__class__(self.width, other.width, new_values)
 

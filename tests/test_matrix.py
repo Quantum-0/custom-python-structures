@@ -133,10 +133,17 @@ class Generation(unittest.TestCase):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_joined_lists(3, values=[1, 2, 3, 4, 5]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_joined_lists(3, 3, values=[1, 2, 3, 4, 5, 6]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([]))
-        self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list("test"))  # noqa
+        self.assertRaises(TypeError, lambda: NumericMatrix.from_nested_list("test"))  # noqa
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[], [], []]))
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y, z: x + y + z))
+        self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix("test"))  # noqa
+        self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix((1, 2, 3)))  # noqa
+        self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix("test"))  # noqa
+        self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix((1, 2, 3)))  # noqa
+        self.assertRaises(ValueError, lambda: NumericMatrix.generate(-1, 2, lambda x, y, z: x + y + z))
+        self.assertRaises(ValueError, lambda: NumericMatrix.generate(4, 0, lambda x, y, z: x + y + z))
+        self.assertRaises(TypeError, lambda: NumericMatrix.generate("test", 2, lambda x, y, z: x + y + z))
 
 
 class Indexing(unittest.TestCase):
@@ -222,6 +229,9 @@ class Slicing(unittest.TestCase):
         assert self.m3.get_minor(1, 1) == Matrix(2, 2, [[0, 2], [6, 8]])
         assert self.m3.get_minor(2, 2) == self.m3[:2, :2]
         assert self.m3.get_minor(0, 0).get_minor(1, 1) == [[4]]
+        self.assertRaises(ValueError, lambda: self.m3.get_minor(-1, 2))
+        self.assertRaises(ValueError, lambda: self.m3.get_minor(1, 3))
+        self.assertRaises(TypeError, lambda: self.m3.get_minor("test", "test"))  # noqa
 
 
 class Math(unittest.TestCase):
@@ -270,6 +280,9 @@ class Math(unittest.TestCase):
         self.E -= self.E
         assert self.E == NumericMatrix.zero_matrix(self.E.width)
         self.assertRaises(AttributeError, lambda: self.C - self.D)
+
+    def test_neg_matrix(self):
+        assert -self.F == [[-1, -1], [-2, -2]]
 
     def test_mul_matrix(self):
         m = NumericMatrix(1, 2, [[1, 2]])
