@@ -138,9 +138,9 @@ class Generation(unittest.TestCase):
         self.assertRaises(ValueError, lambda: NumericMatrix.from_nested_list([[1, 2], [3, 4], [5, 6, 7], [8, 9]]))
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(3, 3, lambda x, y, z: x + y + z))
         self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix("test"))  # noqa
-        self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix((1,2,3)))  # noqa
+        self.assertRaises(TypeError, lambda: NumericMatrix.zero_matrix((1, 2, 3)))  # noqa
         self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix("test"))  # noqa
-        self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix((1,2,3)))  # noqa
+        self.assertRaises(TypeError, lambda: BitMatrix.zero_matrix((1, 2, 3)))  # noqa
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(-1, 2, lambda x, y, z: x + y + z))
         self.assertRaises(ValueError, lambda: NumericMatrix.generate(4, 0, lambda x, y, z: x + y + z))
         self.assertRaises(TypeError, lambda: NumericMatrix.generate("test", 2, lambda x, y, z: x + y + z))
