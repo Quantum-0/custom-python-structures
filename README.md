@@ -11,6 +11,7 @@ Practice custom data structures.
 [![MyPy](https://github.com/Quantum-0/custom-python-structures/actions/workflows/mypy.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/mypy.yml)
 [![PyLint](https://github.com/Quantum-0/custom-python-structures/actions/workflows/lint.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/lint.yml)
 [![Coverage](https://github.com/Quantum-0/custom-python-structures/actions/workflows/coverage.yml/badge.svg)](https://github.com/Quantum-0/custom-python-structures/actions/workflows/coverage.yml)
+[![wakatime](https://wakatime.com/badge/user/7c9029ee-89d1-45a3-8197-cbf6c3bcaf78/project/1b686f61-5c2c-40ca-8aef-591be1f17c44.svg)](https://wakatime.com/badge/user/7c9029ee-89d1-45a3-8197-cbf6c3bcaf78/project/1b686f61-5c2c-40ca-8aef-591be1f17c44)
 
 # Structures
 
