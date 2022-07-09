@@ -20,6 +20,12 @@ class Fraction:
             self._numerator = -self._numerator
             self._denominator = -self._denominator
 
+    @classmethod
+    def from_float(cls, float: float):
+        denominator = 10**(len(str(float)) - len(str(float // 1))+1)
+        numerator = int(str(float).replace('.', ''))
+        return cls(numerator=numerator, denominator=denominator)
+
     def __eq__(self, other: Union[Fraction, int, float]) -> bool:
 
         if isinstance(other, Fraction):

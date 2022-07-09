@@ -68,3 +68,10 @@ class Operation(unittest.TestCase):
         assert self.fract1_2 / self.fract1_4 == 2
         assert self.fract1_4 / 2 == Fraction(1, 8)
         assert 2 / self.fract1_4 == 8
+
+    def test_from_float(self):
+        assert Fraction(1, 4) == Fraction.from_float(1 / 4)
+        assert Fraction(5, 2) == Fraction.from_float(5 / 2)
+        assert Fraction(100, 4) == Fraction.from_float(100 / 4)
+        assert Fraction(16432, 10000) == Fraction.from_float(1.6432)
+        assert Fraction(1007933058582, 10000000000) == Fraction.from_float(100.7933058582)
